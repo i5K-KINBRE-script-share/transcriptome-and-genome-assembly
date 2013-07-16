@@ -1,7 +1,10 @@
 transcriptome-and-genome-assembly
 =================================
+
 Scripts in this repository have been used to assemble de novo transcriptomes and genomes 
 
+KSU_bioinfo_lab folder
+----------------------
 prinseq.sh - paired end read cleaning with prinseq. If your reads are not illumina cassava (post v1.8) you should comment out lines 28 and 29. This script uses a script called stats.sh to monitor and report resource usage on a SGE cluster like Beocat at KSU. But this section (lines 36-42) also can be commented out.  
 
 stats.sh - see prinseq.sh
