@@ -22,3 +22,5 @@ master_ABySS.pl - this scripts call ABySS_script_writer.pl to write single k-mer
 
 ABySS_script_writer.pl - see master_ABySS.pl
 
+ABySS_merge_scaffolds.sh - This script merges ASSEMBLIES of illumina LJD libraries ( http://ngs-expert.com/tag/long-jumping-distance-libraries/ ) using parameters listed on in the abyss-pe manual (http://manpages.ubuntu.com/manpages/raring/en/man1/abyss-pe.1.html). Run this after single kmer assemblies have completed (see master_ABySS.pl). 
+
