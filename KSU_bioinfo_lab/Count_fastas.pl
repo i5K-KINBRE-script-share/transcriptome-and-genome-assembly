@@ -104,4 +104,4 @@ while ($frac_covered > $totalLength/4) {
 #print "Total GC count:\t\t\t$gcCount bp\n";
 #printf "GC %%:\t\t\t\t%.2f %%\n", ($gcCount/$totalLength * 100);
 #print "\n";
-print "${totalLength},${n},${N25count},${N50count},${N75count}";
+print "${totalLength},${n},${N25},${N50},${N75},${N25count},${N50count},${N75count}";
