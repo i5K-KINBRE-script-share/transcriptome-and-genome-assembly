@@ -10,7 +10,7 @@
 use strict;
 use warnings;
 my $out;
-my $path_to_Count_fastas="/Users/jennifershelton/Desktop/Perl_course_texts";
+my $path_to_Count_fastas="/Path/to/Count_fastas_file";
 my $outfile="assembly_metrics.txt";
 open (METRICS, ">$outfile");
 print METRICS "Filename,Cumulative length of contigs(bp),Number of contigs,N25(bp),N50(bp),N75(bp),Number of contigs longer than N25,Number of contigs longer than N50,Number of contigs longer than N75\n";
