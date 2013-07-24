@@ -24,3 +24,9 @@ ABySS_script_writer.pl - see master_ABySS.pl
 
 ABySS_merge_scaffolds.sh - This script merges ASSEMBLIES of illumina LJD libraries ( http://ngs-expert.com/tag/long-jumping-distance-libraries/ ) using parameters listed on in the abyss-pe manual (http://manpages.ubuntu.com/manpages/raring/en/man1/abyss-pe.1.html). Run this after single kmer assemblies have completed (see master_ABySS.pl). 
 
+assembly_quality_stats_for_multiple_assemblies.pl - This script runs a slightly modified version of Joseph Fass' Count_fasta.pl (original available at http://wiki.bioinformatics.ucdavis.edu/index.php/Count_fasta.pl ) on a fasta file from each assembly. It then creates comma separated file called assembly_metrics.txt listing the N25,N50,N75, cumulative contig length, and number of contigs for each assembly (also download Count_fastas.pl and change $path_to_Count_fastas on line 13 of assembly_quality_stats_for_multiple_assemblies.pl).
+
+Count_fastas.pl - see assembly_quality_stats_for_multiple_assemblies.pl
+
+
+
