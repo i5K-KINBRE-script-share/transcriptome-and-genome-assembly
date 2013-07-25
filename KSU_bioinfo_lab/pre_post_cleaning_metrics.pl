@@ -7,7 +7,7 @@
 #
 # 
 #  USAGE: perl pre_post_cleaning_metrics.pl [.log filename/s]
-# This script takes output log files from prinseq pairedend (v prinseq-lite-0.20.3) and outputs summary cleaning metrics to either pre_post_clean_reads.csv.
+# This script takes output log files from prinseq (v prinseq-lite-0.20.3) and outputs summary cleaning metrics to either pre_post_clean_reads.csv.
 ##################  define variables #################################################
 
 use strict;
