@@ -28,5 +28,7 @@ assembly_quality_stats_for_multiple_assemblies.pl - This script runs a slightly 
 
 Count_fastas.pl - see assembly_quality_stats_for_multiple_assemblies.pl
 
+pre_post_cleaning_metrics.pl - This script summarizes average read lengths etc before and after cleaning for multiple single end or paired end files. Output log files from prinseq (v prinseq-lite-0.20.3) are taken as the input and cleaning metrics are written to the file pre_post_clean_reads.csv.
+
 
 
