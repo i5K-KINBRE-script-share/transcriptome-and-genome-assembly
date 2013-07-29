@@ -8,7 +8,7 @@ use 5.010;
 #  USAGE: perl run_abyss.pl ## alter variables (project name, base directory, output directory etc.) within your copy of the script and run. 
 # This script runs an installation of ABySS-1.3.4 on beocat. Step 1 is the assembly of multiple single k-mer assemblies. Step 2 is the merging of these single k-mer assemblies by running ABySS on reads and the unitigs from the multi-kmer assemblies. Step 3 writes a script to calculate N25,N50,N75, cumulative scaffold length, number of scaffolds for all assemblies.
 #
-#  Created by jennifer shelton on 6/23/13.
+#  Created by jennifer shelton on 6/29/13.
 ##################  define variables #################################################
 
 #STEP 1: EDIT THIS TO POINT TO YOUR READS FOR THE ORIGINAL SINGLE K ASSEMBLIES, USE FULL PATH TO THE READS. 
