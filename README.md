@@ -18,17 +18,12 @@ oases_merge.sh - This script calls velvet and oases to merge many single k-mer a
 
 run_Trinity.sh - This script calls Trinity to assemble with a single k-mer. After read cleaning broken pairs can be loaded as (now single end reads) as "--single".
 
-master_ABySS.pl - this scripts call ABySS_script_writer.pl to write single k-mer genome assembly scripts then executes them (on an SGE cluster). Comment out line 15 and uncomment line 16 to run assemblies every odd k-mer between k=51 and k=71 (the range often seen to have the highest N50).
-
-ABySS_script_writer.pl - see master_ABySS.pl
-
-ABySS_merge_scaffolds.sh - This script merges ASSEMBLIES of illumina LJD libraries ( http://ngs-expert.com/tag/long-jumping-distance-libraries/ ) using parameters listed on in the abyss-pe manual (http://manpages.ubuntu.com/manpages/raring/en/man1/abyss-pe.1.html). Run this after single kmer assemblies have completed (see master_ABySS.pl). 
-
 assembly_quality_stats_for_multiple_assemblies.pl - This script runs a slightly modified version of Joseph Fass' Count_fasta.pl (original available at http://wiki.bioinformatics.ucdavis.edu/index.php/Count_fasta.pl ) on a fasta file from each assembly. It then creates comma separated file called assembly_metrics.csv listing the N25,N50,N75, cumulative contig length, and number of contigs for each assembly (also download Count_fastas.pl and change $path_to_Count_fastas on line 13 of assembly_quality_stats_for_multiple_assemblies.pl).
 
 Count_fastas.pl - see assembly_quality_stats_for_multiple_assemblies.pl
 
 pre_post_cleaning_metrics.pl - This script summarizes average read lengths etc before and after cleaning for multiple single end or paired end files. Output log files from prinseq (v prinseq-lite-0.20.3) are taken as the input and cleaning metrics are written to the file pre_post_clean_reads.csv.
 
+run_abyss.pl - This script runs an installation of ABySS-1.3.4 on beocat. Step 1 is the assembly of multiple single k-mer assemblies. Step 2 is the merging of these single k-mer assemblies by running ABySS on reads and the unitigs from the multi-kmer assemblies. Step 3 writes a script to calculate N25,N50,N75, cumulative scaffold length, number of scaffolds for all assemblies.
 
 
