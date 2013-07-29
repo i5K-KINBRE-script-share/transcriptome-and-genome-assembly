@@ -20,7 +20,7 @@ my $base_dir='/homes/bjsco/abyss_test/';
 #file names in the above directory, must be paired end
 my $read_1='test_R1.fastq';
 my $read_2='test_R2.fastq';
-my $unpaired_reads='test_R1.fastq test_R2.fastq test_R1.fastq'; # SPACE SEPARATED LIST OF YOU SINGLE END READS (READS MUST ALSO BE IN ${base_dir})
+my $unpaired_reads_and_or_unitigs='test_R1.fastq test_R2.fastq test_R1.fastq'; # SPACE SEPARATED LIST OF YOU SINGLE END READS (READS MUST ALSO BE IN ${base_dir})
 my $name='test'; # YOUR PROJECT NAME
 
 my $n=64; #Number of processors to use
@@ -39,7 +39,7 @@ foreach my $k (@kmers)
   open(SHELL, ">$script");
   say SHELL '#!/bin/sh';
   say SHELL "export PATH=\$(find /homes/bjsco/abyss-1.3.4 -type d | tr '\n' ':' | sed 's/:\$//'):\${PATH}\n";
-  say SHELL "/homes/bjsco/local/bin/abyss-pe name=${name}-${k} k=${k} np=\$NSLOTS lib=\'pe1 pe2\' pe1=\'${base_dir}${read_1}\' pe2=\'${base_dir}${read_2}\' se=\'${unpaired_reads}\' -C ${outdir}";
+  say SHELL "/homes/bjsco/local/bin/abyss-pe name=${name}-${k} k=${k} np=\$NSLOTS lib=\'pe1 pe2\' pe1=\'${base_dir}${read_1}\' pe2=\'${base_dir}${read_2}\' se=\'${unpaired_reads_and_or_unitigs}\' -C ${outdir}";
   close(SHELL);
   `chmod +x ./${script}`;
   `mkdir ${outdir}`;
@@ -50,4 +50,5 @@ my $assembly_quality_stats_script="abyss_assemblies_quality_stats.sh";
 open(ASSEMBLY_STATS_SHELL, ">>$assembly_quality_stats_script");
 say ASSEMBLY_STATS_SHELL '#!/bin/sh';
 say ASSEMBLY_STATS_SHELL "perl /homes/bioinfo/bioinfo_software/github_scripts/transcriptome-and-genome-assembly/KSU_bioinfo_lab/assembly_quality_stats_for_multiple_assemblies.pl ${base_dir}${name}-*/${name}-*-scaffolds.fa";
+`chmod +x ./${assembly_quality_stats_script}`;
 close(ASSEMBLY_STATS_SHELL);
