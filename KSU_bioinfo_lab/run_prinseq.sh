@@ -1,7 +1,7 @@
 #!/bin/sh
 
-#  cleaning_reads.sh
-#  USAGE: bash cleaning_reads.sh [filenames_minus_R1_001_h.fastq or _R2_001_h.fastq]
+#  run_prinseq.sh
+#  USAGE: bash run_prinseq.sh [filenames_minus_R1_001_h.fastq or _R2_001_h.fastq]
 #
 #  Created by jennifer shelton on 4/8/13.
 ##################  define variables #################################################
