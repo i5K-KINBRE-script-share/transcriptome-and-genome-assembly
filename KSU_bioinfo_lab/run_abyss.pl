@@ -15,7 +15,7 @@ use 5.010;
 #STEP 2: EDIT THIS TO POINT TO YOUR READS AND THE UNITIGS (FROM YOUR SINGLE K ASSEMBLIES) USE FULL PATH TO THE READS AND UNITIGS. THIS MERGE STRATEGY IS BASED ON THE FOLLOWING POST BY SHAUN JACKMAN "Another approach that I’ve used before and works reasonably well is to run the individual k assemblies to the unitigs stage, then reassemble the reads plus the unitigs from the first assemblies at a larger value of k." https://groups.google.com/d/msg/abyss-users/RXIbiucgmPs/VotHOWKcjhMJ
  
 #Base directory where reads are located, must end in a / charachter
-my $base_dir='~/abyss_test/';
+my $base_dir='/homes/bjsco/abyss_test/';
 
 #file names in the above directory, must be paired end
 my $read_1='test_R1.fastq';
@@ -34,7 +34,7 @@ my @kmers = (21, 31, 41, 51, 53, 55, 57, 59); #Kmer values for step1a (these kme
 #Write shell scripts and qsub them
 foreach my $k (@kmers)
 {
-  my $outdir="${base_dir}${name}-${k}";
+  my $outdir="~/${name}-${k}";
   my $script="run_abyss_k${k}.sh";
   open(SHELL, ">$script");
   say SHELL '#!/bin/sh';
