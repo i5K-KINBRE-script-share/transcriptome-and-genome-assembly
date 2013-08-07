@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #  run_broken_pair_removal.sh
-#  USAGE: run_broken_pair_removal.sh [filenames_minus_R1_001_h.fastq or _R2_001_h.fastq]
+#  USAGE: run_broken_pair_removal.sh [filenames_minus_1.fastq or _2.fastq]
 #
 #  Created by jennifer shelton on 8/7/13.
 ##################  define variables #################################################
