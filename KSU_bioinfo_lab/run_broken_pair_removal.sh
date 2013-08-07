@@ -4,6 +4,8 @@
 #  USAGE: run_broken_pair_removal.sh [filenames_minus_1.fastq or _2.fastq]
 #
 #  Created by jennifer shelton on 8/7/13.
+
+mkdir ~/job_logs_broken_pairs
 ##################  define variables #################################################
 
 for fullpath in "$@"
@@ -20,7 +22,6 @@ fi
 ######################  begin  #################################################
 cd ${dir}
 mkdir ~/jobs_${filename}
-mkdir ~/job_logs_broken_pairs
 echo "#!/bin/sh" > ~/jobs_${filename}/broken_pairs-h_${filename}.sh
 echo "cd ${dir}" >> ~/jobs_${filename}/broken_pairs-h_${filename}.sh
 
