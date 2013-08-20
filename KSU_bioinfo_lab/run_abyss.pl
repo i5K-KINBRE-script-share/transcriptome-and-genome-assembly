@@ -39,13 +39,15 @@ foreach my $k (@kmers)
   open(SHELL, ">$script");
   say SHELL '#!/bin/sh';
   say SHELL "export PATH=\$(find /homes/bjsco/abyss-1.3.4 -type d | tr '\n' ':' | sed 's/:\$//'):\${PATH}\n";
-  say SHELL "/homes/bjsco/local/bin/abyss-pe name=${name}-${k} k=${k} np=\$NSLOTS lib=\'pe1 pe2\' pe1=\'${base_dir}${read_1}\' pe2=\'${base_dir}${read_2}\' se=\'${unpaired_reads_and_or_unitigs}\' -C ${outdir}";
+  # say SHELL "/homes/bjsco/local/bin/abyss-pe name=${name}-${k} k=${k} np=\$NSLOTS lib=\'pe1\' pe1=\'${base_dir}${read_1} ${base_dir}${read_2}\' -C ${outdir}"; # use this line if your project has no single end reads and you are not assembling unitgs
+  say SHELL "/homes/bjsco/local/bin/abyss-pe name=${name}-${k} k=${k} np=\$NSLOTS lib=\'pe1\' pe1=\'${base_dir}${read_1} ${base_dir}${read_2}\' se=\'${unpaired_reads_and_or_unitigs}\' -C ${outdir}";
   close(SHELL);
   `chmod +x ./${script}`;
   `mkdir ${outdir}`;
   `qsub -l h_rt=48:00:00,mem=${mem_per_core}G -pe single ${n} ./${script}`;
 }
 #STEP 3: RUN ON ASSEMBLIES TO GENERATE ASSEMBLY STATS ON YOUR SCAFFOLDS. 
+## download required scripts from https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/
 my $assembly_quality_stats_script="abyss_assemblies_quality_stats.sh";
 open(ASSEMBLY_STATS_SHELL, ">>$assembly_quality_stats_script");
 say ASSEMBLY_STATS_SHELL '#!/bin/sh';
