@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 ##### Script converts FAST and QAUL files to FASTQ format. It is a slight modification of a script posted to SeqAnwsers http://seqanswers.com/forums/showthread.php?t=2775 
-##### Usage: fasta2fastq [fasta.file] [qual.file] 
+##### Usage: fasta2fastq [base filename minus '.fasta' and '.qual'] 
 
 use strict;
 use warnings;
@@ -9,11 +9,13 @@ use warnings;
 my $offset = 33; # I think this was 33 for sanger FASTQ, change this if required!
 my $count = 0;
 my %seqs;
-my $fastq = '/homes/bioinfo/Tcas/sanger_reads/tribolium_castaneum.001_R2.fastq';
-die ("Usage: fasta2fastq [fasta.file] [qual.file]") unless  (scalar @ARGV) == 2;
+my $qual =$ARGV[0].".qual";
+my $fasta =$ARGV[0].".fasta";
+my $fastq =$ARGV[0].".fastq";
+die ("Usage: fasta2fastq [base filename minus \'.fasta\' and \'.qual\']") unless  (scalar @ARGV) == 1;
 
-open FASTA, $ARGV[0] or die "cannot open fasta: $!\n";
-open QUAL, $ARGV[1] or die "cannot open qual: $!\n";
+open FASTA, $fasta or die "cannot open fasta: $!\n";
+open QUAL, $qual or die "cannot open qual: $!\n";
 open FASTQ, ">$fastq";
 
 $/ = ">";
