@@ -34,5 +34,5 @@ stats.sh - see prinseq.sh
 
 
 
-![Alt text](images/i5K-INBRE.png)
+                                ![Alt text](images/i5K-INBRE.png)
 
