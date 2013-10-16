@@ -37,7 +37,7 @@ echo "mkdir ${base}_${i}" >> ${base}_${job_description}${i}.sh
 echo "cd ${base}_${i}" >> ${base}_${job_description}${i}.sh
 
 ######################  call program  #################################################
-echo "PATH=/homes/sheltonj/abjc/velvet_1.2.08:/homes/sheltonj/abjc/oases_0.2.08:/usr/local/hadoop/bin:/opt/sge/bin/lx24-amd64:${PATH}" >> ${base}_${job_description}${i}.sh
+echo "PATH=/homes/sheltonj/abjc/velvet_1.2.08:/homes/sheltonj/abjc/oases_0.2.08:${PATH}" >> ${base}_${job_description}${i}.sh
 echo "export PATH" >> ${base}_${job_description}${i}.sh
 echo "velveth oases${i}Bitter ${i} -fastq -short ${filename}_single.fastq -shortPaired -interleaved -fastq ${filename}_paired.fastq " >> ${base}_${job_description}${i}.sh
 echo "velvetg oases${i}Bitter -read_trkg yes -ins_length 332" >> ${base}_${job_description}${i}.sh
