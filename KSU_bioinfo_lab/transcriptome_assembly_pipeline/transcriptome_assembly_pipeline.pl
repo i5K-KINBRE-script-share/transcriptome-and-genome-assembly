@@ -8,7 +8,8 @@
 ###############################################################################
 use strict;
 use warnings;
-# use File::Basename; # enable manipulating of the full path
+use File::Basename; # enable manipulating of the full path
+use Cwd;
 # use List::Util qw(max);
 # use List::Util qw(sum);
 # use Bio::SeqIO;
@@ -30,23 +31,135 @@ print "########################################################################\
 ###############################################################################
 ##############                get arguments                  ##################
 ###############################################################################
-my ();
+my ($r_list,$clean_read_file1,$clean_read_file2,$clean_read_singletons);
+my $project_name = "my_project";,
+my $convert_header = 0;
+my $shortest_k = 25,
+my $longest_k = 65,
+my $increment_k = 2,
+my $merge_k = 39;
+my $qc_reads = 0;
 
 my $man = 0;
 my $help = 0;
 GetOptions (
-			  'help|?' => \$help, 
+			  'help|?' => \$help,
 			  'man' => \$man,
-			  'r|r_cmap:s' => \$r_cmap,    
-              's_algn|sa:f' => \$second_min_per_aligned  
-              )  
+              'r|r_list:s' => \$r_list,
+              'p|project_name:s' => \$project_name,
+              'c|convert_header' => \$convert_header,
+              's|shortest_k:i' => \$shortest_k,
+              'l|longest_k:i' => \$longest_k,
+              'i|increment_k:i' => \$increment_k,
+              'i|merge_k:i' => \$merge_k,
+              'q|qc_reads' => \$qc_reads
+              )
 or pod2usage(2);
 pod2usage(1) if $help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $man;
-# my $dirname = dirname(__FILE__);
-##################################################################################
-##############                        run                       ##################
-##################################################################################
+my $dirname = dirname(__FILE__); # github directories (all github directories must be in the same directory) no trailing slash
+my $home = getcwd; # working directory (this is where output files will be printed)
+#HOME = /homes/bioinfo/test_git
+mkdir "${home}/${project_name}_scripts";
+mkdir "${home}/${project_name}_qsubs";
+mkdir "${home}/${project_name}_prinseq";
+###############################################################################
+############## Create array of the sample names and read files    #############
+###############################################################################
+my @reads;
+open (READ_LIST, '<', $r_list) or die "Can't open $r_list!\n";
+while (<READ_LIST>)
+{
+    chomp;
+    push @reads , [split];
+}
+###############################################################################
+##############     Write scripts for each sample             ##################
+###############################################################################
+for my $samples (@reads)
+{
+    my @r1 = split(',',$samples->[1]); # get list of forward reads
+    my @r2 = split(',',$samples->[2]); # get list of reverse reads
+    if (scalar(@r1) != scalar(@r2))
+    {
+        print "Error the number of forward and reverse read files does not match for sample $samples->[0]!\n"; # each forward file must have a corresponding reverse file
+        exit;
+    }
+    #######################################################################
+    ############ Convert headers of illumina paired-end data ##############
+    #######################################################################
+    open (QSUBS_CLEAN, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_clean.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_clean.sh!\n";
+    print QSUBS_CLEAN '#!/bin/bash';
+    print QSUBS_CLEAN "\n";
+    open (QSUBS_MAP, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_map.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_map.sh!\n";
+    print QSUBS_MAP '#!/bin/bash';
+    print QSUBS_MAP "\n";
+    for my $file (0..$#r1)
+    {
+        my (${filename}, ${directories}, ${suffix}) = fileparse($r1[$file],'\..*'); # break appart filenames
+        my (${filename2}, ${directories2}, ${suffix2}) = fileparse($r2[$file],'\..*'); # break appart filenames
+        open (SCRIPT, '>', "${home}/${project_name}_scripts/${filename}_clean.sh") or die "Can't open ${home}/${project_name}_scripts/${filename}_clean.sh!\n"; # create a shell script for each read-pair set
+        print SCRIPT '#!/bin/bash';
+        print SCRIPT "\n";
+        if ($convert_header)
+        {
+            print SCRIPT "#######################################################################\n############ Convert headers of illumina paired-end data ##############\n#######################################################################\n";
+            print SCRIPT "cat $r1[$file] | awk \'{if (NR % 4 == 1) {split(\$1, arr, \":\"); printf \"%s_%s:%s:%s:%s:%s#0/%s\\n\", arr[1], arr[3], arr[4], arr[5], arr[6], arr[7], substr(\$2, 1, 1), \$0} else if (NR % 4 == 3){print \"+\"} else {print \$0} }\' > ${home}/${filename}_header.fastq\n";
+            $r1[$file] = "${home}/${filename}_header.fastq";
+            print SCRIPT "cat $r2[$file] | awk \'{if (NR % 4 == 1) {split(\$1, arr, \":\"); printf \"%s_%s:%s:%s:%s:%s#0/%s\\n\", arr[1], arr[3], arr[4], arr[5], arr[6], arr[7], substr(\$2, 1, 1), \$0} else if (NR % 4 == 3){print \"+\"} else {print \$0} }\' > ${home}/${filename2}_header.fastq\n";
+            $r2[$file] = "${home}/${filename2}_header.fastq";
+            
+        }
+        #######################################################################
+        ######### Clean reads for low quality without de-duplicating ##########
+        #######################################################################
+        print SCRIPT "#######################################################################\n######### Clean reads for low quality without de-duplicating ##########\n#######################################################################\n";
+        print QSUBS_CLEAN "qsub -l h_rt=48:00:00,mem=40G ${home}/${project_name}_scripts/${filename}_clean.sh\n";
+        print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq $r1[$file] -fastq2 $r2[$file] -min_len 90 -min_qual_mean 25 -trim_qual_type mean -trim_qual_rule lt -trim_qual_window 2 -trim_qual_step 1 -trim_qual_left 20 -trim_qual_right 20 -ns_max_p 1 -trim_ns_left 5 -trim_ns_right 5 -lc_method entropy -lc_threshold 70 -out_format 3 -no_qual_header -log ${home}/${project_name}_prinseq/${filename}_paired.log\ -graph_data ${home}/${project_name}_prinseq/${filename}_raw.gd -out_good ${home}/${filename}_good -out_bad ${home}/${filename}_bad\n";
+        print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq ${home}/${filename}_good_1.fastq -fastq2 ${home}/${filename}_good_2.fastq -out_good null -graph_data ${home}/${project_name}_prinseq/${filename}_cleaned.gd -out_bad null\n";
+        print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq ${home}/${filename}_good_1_singletons.fastq -out_good null -graph_data ${home}/${project_name}_prinseq/${filename}_cleaned_1_singletons.gd -out_bad null\n";
+        print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq ${home}/${filename}_good_2_singletons.fastq -out_good null -graph_data ${home}/${project_name}_prinseq/${filename}_cleaned_2_singletons.gd -out_bad null\n";
+        if ($clean_read_file1)
+        {
+            $clean_read_file1 = "$clean_read_file1"." ${home}/${filename}_good_1.fastq";
+            $clean_read_file2 = "$clean_read_file2"." ${home}/${filename}_good_2.fastq";
+            $clean_read_singletons = "$clean_read_singletons". " ${home}/${filename}_good_1_singletons.fastq ${home}/${filename}_good_2_singletons.fastq";
+        }
+        else
+        {
+            $clean_read_file1 = " ${home}/${filename}_good_1.fastq";
+            $clean_read_file2 = " ${home}/${filename}_good_2.fastq";
+            $clean_read_singletons = " ${home}/${filename}_good_1_singletons.fastq ${home}/${filename}_good_2_singletons.fastq";
+        }
+    }
+    
+    #######################################################################
+    #########         Assemble single k-mer assemblies           ##########
+    #######################################################################
+    open (QSUBS_SINGLEK, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_singlek.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_map.sh!\n";
+    print QSUBS_SINGLEK "#!/bin/bash\n";
+
+
+    
+    close (SCRIPT);
+    open (SCRIPT, '>', "${home}/${project_name}_scripts/$samples->[0]_map.sh") or die "Can't open ${home}/${project_name}_scripts/$samples->[0]_map.sh!\n"; # create a shell script for each read-pair set
+    print SCRIPT '#!/bin/bash';
+    print SCRIPT "\n";
+    print SCRIPT "#######################################################################\n#########         Assemble single k-mer assemblies           ##########\n#######################################################################\n";
+    print SCRIPT "cat$clean_read_file1 > ${out_dir}$samples->[0]_good_1.fastq # concatenate single fasta\n";
+    print SCRIPT "cat$clean_read_file2 > ${out_dir}$samples->[0]_good_2.fastq # concatenate single fasta\n";
+    print SCRIPT "cat$clean_read_singletons > ${out_dir}$samples->[0]_good_singletons.fastq # concatenate single fasta\n";
+    print SCRIPT "/homes/bioinfo/bioinfo_software/bowtie2-2.1.0/bowtie2 -p 20 --fr -q -x $index -1 ${out_dir}$samples->[0]_good_1.fastq -2 ${out_dir}$samples->[0]_good_2.fastq -U ${out_dir}$samples->[0]_good_singletons.fastq -S ${out_dir}$samples->[0]_200.sam\n";
+    if ($labels)
+    {
+        $sams = "$sams".",${out_dir}$samples->[0]_200.sam";
+        $labels  = "$labels".",$samples->[0]";
+    }
+    else
+    {
+        $sams = "${out_dir}$samples->[0]_200.sam";
+        $labels  = "$samples->[0]";
+    }
 
 print "done\n";
 ##################################################################################
@@ -83,14 +196,16 @@ Print a brief help message and exits.
 
 Prints the more detailed manual page with output details and examples and exits.
 
-=item B<-r, --r_cmap>
-
-The reference CMAP produced by IrysView when you create an XMAP. It can be found in the "Imports" folder within a workspace.
-
-=item B<--f_algn, --sa>
-
-The minimum percent of the full potential length of the alignment allowed for the second round of filtering. This should be higher than the setting for the first round of filtering.
-
+=item B<-r, --r_list>
+ 
+The filename of the user provided list of read files. The file should be tab separated with the first read file, then the second read file. Example:
+sample_data/sample_1_R1.fastq   sample_data/sample_1_R2.fastq
+ 
+If a sample has multiple fastq files for R1 and R2 separate these with commas. Example:
+sample_data/sample_1a_R1.fastq,sample_data/sample_1b_R1.fastq,sample_data/sample_1c_R1.fastq   sample_data/sample_1a_R2.fastq,sample_data/sample_1b_R2.fastq,sample_data/sample_1c_R2.fastq
+ 
+ 
+ 
 =back
 
 =head1 DESCRIPTION
