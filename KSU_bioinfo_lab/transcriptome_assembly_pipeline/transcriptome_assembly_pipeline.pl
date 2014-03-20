@@ -161,20 +161,20 @@ for my $samples (@reads)
         open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_$k_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_$k_assemble.sh!\n"; # create a shell script for each read-pair set
         print SCRIPT "#!/bin/bash\n";
         print SCRIPT "#######################################################################\n#########         Assemble single k-mer assemblies  k=$k     ##########\n#######################################################################\n";
-        print SCRIPT "/homes/bioinfo/bioinfo_software/bowtie2-2.1.0/bowtie2 -p 20 --fr -q -x $index -1 ${out_dir}$samples->[0]_good_1.fastq -2 ${out_dir}$samples->[0]_good_2.fastq -U ${out_dir}$samples->[0]_good_singletons.fastq -S ${out_dir}$samples->[0]_200.sam\n";
         print SCRIPT "set -o verbose\n";
         print SCRIPT "PATH=/homes/sheltonj/abjc/velvet_1.2.08:/homes/sheltonj/abjc/oases_0.2.08:\${PATH}\n";
         print SCRIPT "export PATH\n";
         ######### shuffle sequences (if your pairs are unbroken but in two fastq files) ##########
-        print SCRIPT "perl /homes/sheltonj/abjc/velvet_1.2.08/contrib/shuffleSequences_fasta/shuffleSequences_fastq.pl ${home}/${project_name}_good_1.fastq ${home}/${project_name}_good_2.fastq ${home}/${project_name}_good_shuff_pairs.fastq
+        print SCRIPT "perl /homes/sheltonj/abjc/velvet_1.2.08/contrib/shuffleSequences_fasta/shuffleSequences_fastq.pl ${home}/${project_name}_good_1.fastq ${home}/${project_name}_good_2.fastq ${home}/${project_name}_good_shuff_pairs.fastq\n";
         print SCRIPT "cd ${home}\n";
         print SCRIPT "velveth ${project_name}_${k} ${k} -fastq -short ${home}/${project_name}_good_singletons.fastq -shortPaired -interleaved -fastq ${home}/${project_name}_good_shuff_pairs.fastq\n";
-        print SCRIPT "velvetg ${project_name}_${k} -read_trkg yes -ins_length 240" >> velv${i}HI.sh
+        print SCRIPT "velvetg ${project_name}_${k} -read_trkg yes -ins_length ${ins_length}\n";
         print SCRIPT "oases ${project_name}_${k}\n";
         ######### estimates memory requirements and write qsubs for beocat ###
+        my $mem=30;
         my $kmem=(-109635 + 18977*100 + 86326*177 + 233353*$count*3 - 51092*${k});
-        my $mem=(${kmem}/1000000);
-        print QSUBS_SINGLEK "qsub -l h_rt=100:00:00,mem=${mem}G ${home}/${project_name}_scripts/${project_name}_$k_assemble.sh\n";
+        $mem=(${kmem}/1000000);
+        print QSUBS_SINGLEK "qsub -l h_rt=100:00:00,mem=${mem}G ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh\n";
 #        Ram required for velvetg = -109635 + 18977*ReadSize + 86326*GenomeSize + 233353*NumReads - 51092*K
 
     }
