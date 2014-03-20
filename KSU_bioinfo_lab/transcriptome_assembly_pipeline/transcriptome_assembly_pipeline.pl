@@ -97,12 +97,18 @@ for my $samples (@reads)
     print QSUBS_MAP "\n";
     for my $file (0..$#r1)
     {
-        open (TEST_READ,'<',"$r1[$file]") or die "can't open $r1[$file]!\n";
-        1 while( <TEST_READ> );
-        my $count = ($. + $count);
-        
+        #######################################################################
+        ###### Split read filenames into usefull parts for renaming   #########
+        # and avoiding relative paths (some software disliked relative paths) #
+        #######################################################################
         my (${filename}, ${directories}, ${suffix}) = fileparse($r1[$file],'\..*'); # break appart filenames
         my (${filename2}, ${directories2}, ${suffix2}) = fileparse($r2[$file],'\..*'); # break appart filenames
+        #######################################################################
+        ###### Estimate size of R1 library to estimate the mem needed #########
+        #######################################################################
+        open (TEST_READ,'<',"${home}/{filename}.${suffix}") or die "can't open ${home}/{filename}.${suffix}!\n";
+        1 while( <TEST_READ> );
+        my $count = ($. + $count);
         open (SCRIPT, '>', "${home}/${project_name}_scripts/${filename}_clean.sh") or die "Can't open ${home}/${project_name}_scripts/${filename}_clean.sh!\n"; # create a shell script for each read-pair set
         print SCRIPT '#!/bin/bash';
         print SCRIPT "\n";
