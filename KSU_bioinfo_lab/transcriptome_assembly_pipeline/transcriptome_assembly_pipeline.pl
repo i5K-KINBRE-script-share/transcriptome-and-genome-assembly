@@ -332,6 +332,10 @@ perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/transcriptome_assembly_
  
 bash ~/de_novo_transcriptome/cell_line_qsubs/cell_line_qsubs_clean.sh
  
+# Concatenate cleaned reads and shuffle sequences for Oases
+ 
+bash ~/de_novo_transcriptome/cell_line_scripts/cat_reads.sh
+ 
 # Assemble single kmer transcriptomes. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
  
  bash ~/de_novo_transcriptome/cell_line_qsubs/cell_line_qsubs_singlek.sh
