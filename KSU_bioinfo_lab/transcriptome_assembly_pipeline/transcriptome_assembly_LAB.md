@@ -89,6 +89,7 @@ We have also used CDHit to cluster similar putative transcripts because even wit
 Gruenheit et al. 2012 used the multi kmer method as well as exploring the effects of other parameters on final transcriptome assemblies. Using the complex example of autopolyploids the authors of this paper use the parameters k-mer length and coverage cut-off to address a topic that was touched on in Schulz et al 2012. In Gruenheit et al. 2012 both k-mer size and coverage cut-off were manipulated. The authors estimate they assembled 3,171 more transcripts than would have been produced with a single optimized assembly and state.
 
 Below you see the assembly N50 for single kmer assemblies with the same coverage cutoff value. The reads used in this study were 75 bp. The reads used in the Oases-M paper were based on 45bp reads. The reads you used were 50bp. 
+![Alt text](https://raw.githubusercontent.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/master/KSU_bioinfo_lab/transcriptome_assembly_pipeline/Gruenheit_et_al._2012.png)
 
 Plot your N50 values from the ~/de_novo_transcriptome/assembly_metrics.csv file.
 
