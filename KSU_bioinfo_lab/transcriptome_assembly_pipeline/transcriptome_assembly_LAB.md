@@ -7,6 +7,8 @@ To find out more about the parameters for "transcriptome_assembly_pipeline.pl" r
 ###Step 1: Clone the Git repository 
 
         git clone https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly
+        git clone https://github.com/i5K-KINBRE-script-share/read-cleaning-format-conversion
+        git clone https://github.com/i5K-KINBRE-script-share/genome-annotation-and-comparison
         
 ###Step 2: Create project directory and add your input data to it
 
@@ -38,13 +40,33 @@ Your output will look similar to the output below for the sample data. Because t
         IIHIIIIIIHHIHIIIIIEIIIIIIIIIIIHHII@IHIIIIHHEIIHIID
         @HWUSI-EAS1794_0001_FC61KOJ:4:75:5014:13576#0/1
         CTCAGCCACCAGCAGCGGCACCCCCATCTGCAGTTGGCTCTTCTGCTGCT
+        
+Call "transcriptome_assembly_pipeline.pl"
+        perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/transcriptome_assembly_pipeline/transcriptome_assembly_pipeline.pl -r cell_line_reads_assembly.txt -p cell_line -s 25 -l 39 -i 2 -m 35
 
-Step 4: Run prinseq and the assembly scripts
+###Step 4: Run prinseq and the assembly scripts
 
-        perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/transcriptome_assembly_pipeline/transcriptome_assembly_pipeline.pl -r cell_line_reads_assembly.txt -p cell_line -s 25 -l 41 -i 2 
+Clean raw reads. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session. Download the ".gd" files in the "~/de_novo_transcriptome/cell_line__prinseq" directory and upload them to http://edwards.sdsu.edu/cgi-bin/prinseq/prinseq.cgi?report=1 to evaluate read quality pre and post cleaning.
+
+        bash ~/de_novo_transcriptome/cell_line_qsubs/cell_line_qsubs_clean.sh
+
+Concatenate cleaned reads and shuffle sequences for Oases
+
+        bash ~/de_novo_transcriptome/cell_line_scripts/cat_reads.sh
+        
+Assemble single kmer transcriptomes. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
+        bash ~/de_novo_transcriptome/cell_line_qsubs/cell_line_qsubs_singlek.sh
+        
+Merge single kmer transcriptomes. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
+
+        bash ~/de_novo_transcriptome/cell_line_qsubs/cell_line_qsubs_merge.sh
+        
+Generate assembly metrics and summarize the cleaning step results
+
+        bash ~/de_novo_transcriptome/cell_line_scripts/cell_line_qc_assemblies.sh
 
 
-## remember to change prinseq commands!!!!
+
 
 
 transcriptome_assembly_pipeline.pl

@@ -123,7 +123,7 @@ for my $samples (@reads)
         ######### Clean reads for low quality without de-duplicating ##########
         #######################################################################
         print SCRIPT "#######################################################################\n######### Clean reads for low quality without de-duplicating ##########\n#######################################################################\n";
-        print QSUBS_CLEAN "qsub -l h_rt=48:00:00,mem=40G ${home}/${project_name}_scripts/${filename}_clean.sh\n";
+        print QSUBS_CLEAN "qsub -l h_rt=24:00:00,mem=10G ${home}/${project_name}_scripts/${filename}_clean.sh\n";
         print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq $r1[$file] -fastq2 $r2[$file] -min_len ${min_read_length} -min_qual_mean 25 -trim_qual_type mean -trim_qual_rule lt -trim_qual_window 2 -trim_qual_step 1 -derep 1 -trim_qual_left 20 -trim_qual_right 20 -ns_max_p 1 -trim_ns_left 5 -trim_ns_right 5 -lc_method entropy -lc_threshold 70 -out_format 3 -no_qual_header -log ${home}/${project_name}_prinseq/${filename}_paired.log -graph_data ${home}/${project_name}_prinseq/${filename}_raw.gd -out_good ${home}/${filename}_good -out_bad ${home}/${filename}_bad\n"; # run prinseq to filter low quality reads
         print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq ${home}/${filename}_good_1.fastq -fastq2 ${home}/${filename}_good_2.fastq -out_good null -graph_data ${home}/${project_name}_prinseq/${filename}_cleaned.gd -out_bad null\n"; # cleaned metrics on paired reads
         print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq ${home}/${filename}_good_1_singletons.fastq -out_good null -graph_data ${home}/${project_name}_prinseq/${filename}_cleaned_1_singletons.gd -out_bad null\n"; # cleaned metrics on singletons (reads where only one mate passed the qc)
@@ -151,6 +151,8 @@ for my $samples (@reads)
     print SCRIPT "cat$clean_read_file1 > ${home}/${project_name}_good_1.fastq # concatenate fasta\n";
     print SCRIPT "cat$clean_read_file2 > ${home}/${project_name}_good_2.fastq # concatenate fasta\n";
     print SCRIPT "cat$clean_read_singletons > ${home}/${project_name}_good_singletons.fastq # concatenate single fasta\n";
+    ######### shuffle sequences (if your pairs are unbroken but in two fastq files) ##########
+    print SCRIPT "perl /homes/sheltonj/abjc/velvet_1.2.08/contrib/shuffleSequences_fasta/shuffleSequences_fastq.pl ${home}/${project_name}_good_1.fastq ${home}/${project_name}_good_2.fastq ${home}/${project_name}_good_shuff_pairs.fastq\n";
     
     #######################################################################
     #########         Assemble single k-mer assemblies           ##########
@@ -169,8 +171,6 @@ for my $samples (@reads)
         print SCRIPT "set -o verbose\n";
         print SCRIPT "PATH=/homes/sheltonj/abjc/velvet_1.2.08:/homes/sheltonj/abjc/oases_0.2.08:\${PATH}\n";
         print SCRIPT "export PATH\n";
-        ######### shuffle sequences (if your pairs are unbroken but in two fastq files) ##########
-        print SCRIPT "perl /homes/sheltonj/abjc/velvet_1.2.08/contrib/shuffleSequences_fasta/shuffleSequences_fastq.pl ${home}/${project_name}_good_1.fastq ${home}/${project_name}_good_2.fastq ${home}/${project_name}_good_shuff_pairs.fastq\n";
         print SCRIPT "cd ${home}\n";
         print SCRIPT "velveth ${project_name}_${k} ${k} -fastq -short ${home}/${project_name}_good_singletons.fastq -shortPaired -interleaved -fastq ${home}/${project_name}_good_shuff_pairs.fastq\n";
         print SCRIPT "velvetg ${project_name}_${k} -read_trkg yes -ins_length ${ins_length}\n";
@@ -204,6 +204,15 @@ for my $samples (@reads)
     my $kmem=(-109635 + 18977*100 + 86326*400 + 233353*$count*2 - 51092*${merge_k});
     $mem=(${kmem}/1000000);
     print QSUBS_MERGE "qsub -l h_rt=100:00:00,mem=${mem}G ${home}/${project_name}_scripts/${project_name}_${merge_k}_assemble.sh\n";
+    #######################################################################
+    #########    QC assemblies and summarize cleaning steps      ##########
+    #######################################################################
+    open (QC, '>', "${home}/${project_name}_scripts/${project_name}_qc_assemblies.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_qc_assemblies.sh!\n";
+    print QC "#!/bin/bash\n";
+    print QC "#######################################################################\n#########    QC assemblies and summarize cleaning steps      ##########\n#######################################################################\n";
+    print QC "cd ${home}\n";
+    print QC "perl ~/read-cleaning-format-conversion/KSU_bioinfo_lab/pre_post_cleaning_metrics.pl ${home}/${project_name}_prinseq/*_paired.log\n";
+    print QC "perl ~/genome-annotation-and-comparison/KSU_bioinfo_lab/assembly_quality_stats_for_multiple_assemblies.pl ${home}/${project_name}_*/transcripts.fa\n";
 }
 
 print "done\n";
