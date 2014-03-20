@@ -38,7 +38,6 @@ my $shortest_k = 25,
 my $longest_k = 65,
 my $increment_k = 2,
 my $merge_k = 39;
-my $ins_length = 250;
 my $min_read_length = 90;
 my $count = 0; # count reads in files
 my $man = 0;
@@ -53,7 +52,6 @@ GetOptions (
               'l|longest_k:i' => \$longest_k,
               'i|increment_k:i' => \$increment_k,
               'm|merge_k:i' => \$merge_k,
-              'x|ins_length:i' => \$ins_length,
               'n|min_read_length:i' => \$min_read_length
               )
 or pod2usage(2);
@@ -173,7 +171,7 @@ for my $samples (@reads)
         print SCRIPT "export PATH\n";
         print SCRIPT "cd ${home}\n";
         print SCRIPT "velveth ${project_name}_${k} ${k} -fastq -short ${home}/${project_name}_good_singletons.fastq -shortPaired -interleaved -fastq ${home}/${project_name}_good_shuff_pairs.fastq\n";
-        print SCRIPT "velvetg ${project_name}_${k} -read_trkg yes -ins_length ${ins_length}\n";
+        print SCRIPT "velvetg ${project_name}_${k} -read_trkg yes\n";
         print SCRIPT "oases ${project_name}_${k}\n";
         ######### estimates memory requirements and write qsubs for beocat ###
         my $mem=30;
@@ -205,14 +203,24 @@ for my $samples (@reads)
     $mem=(${kmem}/1000000);
     print QSUBS_MERGE "qsub -l h_rt=100:00:00,mem=${mem}G ${home}/${project_name}_scripts/${project_name}_${merge_k}_assemble.sh\n";
     #######################################################################
+    #########           Cluster merged assembly with CDH         ##########
+    #######################################################################
+    open (CLUSTER_QC, '>', "${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh!\n";
+    print CLUSTER_QC"#!/bin/bash\n";
+    print CLUSTER_QC"set -o verbose\n";
+    print CLUSTER_QC"${home}\n";
+    print CLUSTER_QC'#######  non-redudantfrom http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0056217#s4 The transcripts from three individual assemblies were clustered (CD-HIT v4.5.4 http://www.bioinformatics.org/cd-hit/) [56] in order to generate a comprehensive reference. Sequence identity threshold and alignment coverage (for the shorter sequence) were both set as 80% to generate clusters. Such clustered transcripts were defined as reference transcripts in this work.###########';
+    print CLUSTER_QC"\n/homes/sheltonj/abjc/cd-hit-v4.6.1/cd-hit-est -i ${home}/mergedAssembly/transcripts.fa -o ${home}/mergedAssembly/CDH_clustermergedAssembly_${project_name}_${merge_k}.fa -c .80 -aS .80s\n";
+
+    #######################################################################
     #########    QC assemblies and summarize cleaning steps      ##########
     #######################################################################
-    open (QC, '>', "${home}/${project_name}_scripts/${project_name}_qc_assemblies.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_qc_assemblies.sh!\n";
-    print QC "#!/bin/bash\n";
-    print QC "#######################################################################\n#########    QC assemblies and summarize cleaning steps      ##########\n#######################################################################\n";
-    print QC "cd ${home}\n";
-    print QC "perl ~/read-cleaning-format-conversion/KSU_bioinfo_lab/pre_post_cleaning_metrics.pl ${home}/${project_name}_prinseq/*_paired.log\n";
-    print QC "perl ~/genome-annotation-and-comparison/KSU_bioinfo_lab/assembly_quality_stats_for_multiple_assemblies.pl ${home}/${project_name}_*/transcripts.fa\n";
+    print CLUSTER_QC "#######################################################################\n#########    QC assemblies and summarize cleaning steps      ##########\n#######################################################################\n";
+    print CLUSTER_QC "perl ~/read-cleaning-format-conversion/KSU_bioinfo_lab/pre_post_cleaning_metrics.pl ${home}/${project_name}_prinseq/*_paired.log\n";
+    print CLUSTER_QC "perl ~/genome-annotation-and-comparison/KSU_bioinfo_lab/assembly_quality_stats_for_multiple_assemblies.pl ${project_name}_*/transcripts.fa mergedAssembly/transcripts.fa mergedAssembly/CDH_clustermergedAssembly_${project_name}_${merge_k}.fa\n";
+    open (QSUBS_CLUSTER_QC, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_cluster_and_qc.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_cluster_and_qc.sh!\n";
+    print QSUBS_CLUSTER_QC "#!/bin/bash\n";
+    print QSUBS_CLUSTER_QC "qsub -l h_rt=300:00:00,mem=2G ${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh\n";
 }
 
 print "done\n";
@@ -235,8 +243,15 @@ perl transcriptome_assembly_pipeline.pl [options]
    -man	    full documentation
  Required options:
    -r	     reference CMAP
+   -p	     project name (no spaces)
+   -s	     shortest kmer (default = 25)
+   -l	     longest kmer (default = 65)
+   -i	     kmer increments (default = 2)
+   -m	     merge kmer (default = 39)
  Filtering options:
-   --s_algn	 second minimum % of possible alignment   
+   -n	     minimum read length
+ Fastq format options:
+   -c	     convert fastq headers
    
 =head1 OPTIONS
 
@@ -257,7 +272,14 @@ sample_data/sample_1_R1.fastq   sample_data/sample_1_R2.fastq
  
 If a sample has multiple fastq files for R1 and R2 separate these with commas. Example:
 sample_data/sample_1a_R1.fastq,sample_data/sample_1b_R1.fastq,sample_data/sample_1c_R1.fastq   sample_data/sample_1a_R2.fastq,sample_data/sample_1b_R2.fastq,sample_data/sample_1c_R2.fastq
+
+ =item B<-c, --convert_header>
  
+ If the illumina headers do not end in /1 or /2 use this parameter to indicat that headers need to be converted. Check your headers by typing "head [fasta filename]" and read more about illumina headers at http://en.wikipedia.org/wiki/Fastq#Illumina_sequence_identifiers.
+ 
+ =item B<-l, --min_len>
+ 
+ The minimum read length. Reads shorter than this after cleaning will be discarded. Default minimum length is 90bp.
  
  
 =back

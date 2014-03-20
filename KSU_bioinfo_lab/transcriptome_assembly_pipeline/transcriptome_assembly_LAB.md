@@ -41,8 +41,8 @@ Your output will look similar to the output below for the sample data. Because t
         @HWUSI-EAS1794_0001_FC61KOJ:4:75:5014:13576#0/1
         CTCAGCCACCAGCAGCGGCACCCCCATCTGCAGTTGGCTCTTCTGCTGCT
         
-Call "transcriptome_assembly_pipeline.pl"
-        perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/transcriptome_assembly_pipeline/transcriptome_assembly_pipeline.pl -r cell_line_reads_assembly.txt -p cell_line -s 25 -l 39 -i 2 -m 35
+Call "transcriptome_assembly_pipeline.pl". Our reads are only 50 bp long so we are setting our minimum read length to 35 bp. Generally you want to keep this length ~10 bp shorter than our read length. We would also raise the longest kmer value "-l" to ~61 if our reads were 100bp.
+        perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/transcriptome_assembly_pipeline/transcriptome_assembly_pipeline.pl -r cell_line_reads_assembly.txt -p cell_line -s 25 -l 39 -i 2 -n 35 -m 33
 
 ###Step 4: Run prinseq and the assembly scripts
 
@@ -55,18 +55,14 @@ Concatenate cleaned reads and shuffle sequences for Oases
         bash ~/de_novo_transcriptome/cell_line_scripts/cat_reads.sh
         
 Assemble single kmer transcriptomes. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
+
         bash ~/de_novo_transcriptome/cell_line_qsubs/cell_line_qsubs_singlek.sh
         
 Merge single kmer transcriptomes. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
 
         bash ~/de_novo_transcriptome/cell_line_qsubs/cell_line_qsubs_merge.sh
         
-Generate assembly metrics and summarize the cleaning step results
+Cluster merged assembly with CDH. Putative transcripts that share 80% identity over 80% of the length are clustered and the longest transcript is printed in the clustered fasta file. This step will also generate assembly metrics and summarize the cleaning step results.
 
-        bash ~/de_novo_transcriptome/cell_line_scripts/cell_line_qc_assemblies.sh
+        bash ~/de_novo_transcriptome/cell_line_qsubs/cell_line_qsubs_cluster_and_qc.sh
 
-
-
-
-
-transcriptome_assembly_pipeline.pl
