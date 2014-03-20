@@ -201,16 +201,16 @@ for my $samples (@reads)
     my $mem=30;
     my $kmem=(-109635 + 18977*100 + 86326*400 + 233353*$count*2 - 51092*${merge_k});
     $mem=(${kmem}/1000000);
-    print QSUBS_MERGE "qsub -l h_rt=100:00:00,mem=${mem}G ${home}/${project_name}_scripts/${project_name}_${merge_k}_assemble.sh\n";
+    print QSUBS_MERGE "qsub -l h_rt=100:00:00,mem=${mem}G ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh\n";
     #######################################################################
     #########           Cluster merged assembly with CDH         ##########
     #######################################################################
     open (CLUSTER_QC, '>', "${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh!\n";
-    print CLUSTER_QC"#!/bin/bash\n";
-    print CLUSTER_QC"set -o verbose\n";
-    print CLUSTER_QC"${home}\n";
-    print CLUSTER_QC'#######  non-redudantfrom http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0056217#s4 The transcripts from three individual assemblies were clustered (CD-HIT v4.5.4 http://www.bioinformatics.org/cd-hit/) [56] in order to generate a comprehensive reference. Sequence identity threshold and alignment coverage (for the shorter sequence) were both set as 80% to generate clusters. Such clustered transcripts were defined as reference transcripts in this work.###########';
-    print CLUSTER_QC"\n/homes/sheltonj/abjc/cd-hit-v4.6.1/cd-hit-est -i ${home}/mergedAssembly/transcripts.fa -o ${home}/mergedAssembly/CDH_clustermergedAssembly_${project_name}_${merge_k}.fa -c .80 -aS .80s\n";
+    print CLUSTER_QC "#!/bin/bash\n";
+    print CLUSTER_QC "set -o verbose\n";
+    print CLUSTER_QC "cd ${home}\n";
+#    print CLUSTER_QC '#######  non-redudant from http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0056217#s4 The transcripts from three individual assemblies were clustered (CD-HIT v4.5.4 http://www.bioinformatics.org/cd-hit/) [56] in order to generate a comprehensive reference. Sequence identity threshold and alignment coverage (for the shorter sequence) were both set as 80% to generate clusters. Such clustered transcripts were defined as reference transcripts in this work.###########';
+    print CLUSTER_QC "\n/homes/sheltonj/abjc/cd-hit-v4.6.1/cd-hit-est -i ${home}/mergedAssembly/transcripts.fa -o ${home}/mergedAssembly/CDH_clustermergedAssembly_${project_name}_${merge_k}.fa -c .80 -aS .80s\n";
 
     #######################################################################
     #########    QC assemblies and summarize cleaning steps      ##########
