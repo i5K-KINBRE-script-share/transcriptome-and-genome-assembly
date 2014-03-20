@@ -19,7 +19,7 @@ Create symbolic links to raw RNA reads from the human breast cancer cell lines. 
 
         ln -s /homes/bioinfo/RNA-Seq_sample/* ~/de_novo_transcriptome/
         
-Step 3: Write tuxedo scripts
+Step 3: Write assembly scripts
 
 Check to see if your fastq headers end in "/1" or "/2" (if they do not you must add the parameter "-c" when you run "transcriptome_assembly_pipeline.pl"
 
@@ -39,8 +39,9 @@ Your output will look similar to the output below for the sample data. Because t
         @HWUSI-EAS1794_0001_FC61KOJ:4:75:5014:13576#0/1
         CTCAGCCACCAGCAGCGGCACCCCCATCTGCAGTTGGCTCTTCTGCTGCT
 
+Step 4: Run prinseq and the assembly scripts
 
-
+## remember to cat reads!!!!
 
 
 transcriptome_assembly_pipeline.pl

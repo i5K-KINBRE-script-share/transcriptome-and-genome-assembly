@@ -38,7 +38,8 @@ my $shortest_k = 25,
 my $longest_k = 65,
 my $increment_k = 2,
 my $merge_k = 39;
-my $qc_reads = 0;
+my $ins_length = 250;
+my $count = 0;
 
 my $man = 0;
 my $help = 0;
@@ -52,7 +53,7 @@ GetOptions (
               'l|longest_k:i' => \$longest_k,
               'i|increment_k:i' => \$increment_k,
               'i|merge_k:i' => \$merge_k,
-              'q|qc_reads' => \$qc_reads
+              'i|ins_length:i' => \$ins_length
               )
 or pod2usage(2);
 pod2usage(1) if $help;
@@ -78,11 +79,11 @@ while (<READ_LIST>)
 ###############################################################################
 for my $samples (@reads)
 {
-    my @r1 = split(',',$samples->[1]); # get list of forward reads
-    my @r2 = split(',',$samples->[2]); # get list of reverse reads
+    my @r1 = split(',',$samples->[0]); # get list of forward reads
+    my @r2 = split(',',$samples->[1]); # get list of reverse reads
     if (scalar(@r1) != scalar(@r2))
     {
-        print "Error the number of forward and reverse read files does not match for sample $samples->[0]!\n"; # each forward file must have a corresponding reverse file
+        print "Error the number of forward and reverse read files does not match!\n"; # each forward file must have a corresponding reverse file
         exit;
     }
     #######################################################################
@@ -96,6 +97,10 @@ for my $samples (@reads)
     print QSUBS_MAP "\n";
     for my $file (0..$#r1)
     {
+        open (TEST_READ,'<',"$r1[$file]") or die "can't open $r1[$file]!\n";
+        1 while( <TEST_READ> );
+        my $count = ($. + $count);
+        
         my (${filename}, ${directories}, ${suffix}) = fileparse($r1[$file],'\..*'); # break appart filenames
         my (${filename2}, ${directories2}, ${suffix2}) = fileparse($r2[$file],'\..*'); # break appart filenames
         open (SCRIPT, '>', "${home}/${project_name}_scripts/${filename}_clean.sh") or die "Can't open ${home}/${project_name}_scripts/${filename}_clean.sh!\n"; # create a shell script for each read-pair set
@@ -132,6 +137,15 @@ for my $samples (@reads)
             $clean_read_singletons = " ${home}/${filename}_good_1_singletons.fastq ${home}/${filename}_good_2_singletons.fastq";
         }
     }
+    close (SCRIPT);
+    #######################################################################
+    #########            Concantinate clean reads                ##########
+    #######################################################################
+    open (SCRIPT, '>', "${home}/${project_name}_scripts/cat_reads.sh") or die "Can't open ${home}/${project_name}_scripts/cat_reads.sh!\n"; # create a shell script
+    print SCRIPT "#!/bin/bash\n";
+    print SCRIPT "cat$clean_read_file1 > ${home}/${project_name}_good_1.fastq # concatenate fasta\n";
+    print SCRIPT "cat$clean_read_file2 > ${home}/${project_name}_good_2.fastq # concatenate fasta\n";
+    print SCRIPT "cat$clean_read_singletons > ${home}/${project_name}_good_singletons.fastq # concatenate single fasta\n";
     
     #######################################################################
     #########         Assemble single k-mer assemblies           ##########
@@ -140,26 +154,46 @@ for my $samples (@reads)
     print QSUBS_SINGLEK "#!/bin/bash\n";
 
 
-    
+    for ( my $k = $shortest_k; $i =< $longest_k; $i += $increment_k )
+    {
+
+        close (SCRIPT);
+        open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_$k_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_$k_assemble.sh!\n"; # create a shell script for each read-pair set
+        print SCRIPT "#!/bin/bash\n";
+        print SCRIPT "#######################################################################\n#########         Assemble single k-mer assemblies  k=$k     ##########\n#######################################################################\n";
+        print SCRIPT "/homes/bioinfo/bioinfo_software/bowtie2-2.1.0/bowtie2 -p 20 --fr -q -x $index -1 ${out_dir}$samples->[0]_good_1.fastq -2 ${out_dir}$samples->[0]_good_2.fastq -U ${out_dir}$samples->[0]_good_singletons.fastq -S ${out_dir}$samples->[0]_200.sam\n";
+        print SCRIPT "set -o verbose\n";
+        print SCRIPT "PATH=/homes/sheltonj/abjc/velvet_1.2.08:/homes/sheltonj/abjc/oases_0.2.08:\${PATH}\n";
+        print SCRIPT "export PATH\n";
+        ######### shuffle sequences (if your pairs are unbroken but in two fastq files) ##########
+        print SCRIPT "perl /homes/sheltonj/abjc/velvet_1.2.08/contrib/shuffleSequences_fasta/shuffleSequences_fastq.pl ${home}/${project_name}_good_1.fastq ${home}/${project_name}_good_2.fastq ${home}/${project_name}_good_shuff_pairs.fastq
+        print SCRIPT "cd ${home}\n";
+        print SCRIPT "velveth ${project_name}_${k} ${k} -fastq -short ${home}/${project_name}_good_singletons.fastq -shortPaired -interleaved -fastq ${home}/${project_name}_good_shuff_pairs.fastq\n";
+        print SCRIPT "velvetg ${project_name}_${k} -read_trkg yes -ins_length 240" >> velv${i}HI.sh
+        print SCRIPT "oases ${project_name}_${k}\n";
+        ######### estimates memory requirements and write qsubs for beocat ###
+        my $kmem=(-109635 + 18977*100 + 86326*177 + 233353*$count*3 - 51092*${k});
+        my $mem=(${kmem}/1000000);
+        print QSUBS_SINGLEK "qsub -l h_rt=100:00:00,mem=${mem}G ${home}/${project_name}_scripts/${project_name}_$k_assemble.sh\n";
+#        Ram required for velvetg = -109635 + 18977*ReadSize + 86326*GenomeSize + 233353*NumReads - 51092*K
+
+    }
+    #######################################################################
+    #########   Assemble merged k-mer assemblies  k=${merge_k}   ##########
+    #######################################################################
     close (SCRIPT);
-    open (SCRIPT, '>', "${home}/${project_name}_scripts/$samples->[0]_map.sh") or die "Can't open ${home}/${project_name}_scripts/$samples->[0]_map.sh!\n"; # create a shell script for each read-pair set
-    print SCRIPT '#!/bin/bash';
-    print SCRIPT "\n";
-    print SCRIPT "#######################################################################\n#########         Assemble single k-mer assemblies           ##########\n#######################################################################\n";
-    print SCRIPT "cat$clean_read_file1 > ${out_dir}$samples->[0]_good_1.fastq # concatenate single fasta\n";
-    print SCRIPT "cat$clean_read_file2 > ${out_dir}$samples->[0]_good_2.fastq # concatenate single fasta\n";
-    print SCRIPT "cat$clean_read_singletons > ${out_dir}$samples->[0]_good_singletons.fastq # concatenate single fasta\n";
-    print SCRIPT "/homes/bioinfo/bioinfo_software/bowtie2-2.1.0/bowtie2 -p 20 --fr -q -x $index -1 ${out_dir}$samples->[0]_good_1.fastq -2 ${out_dir}$samples->[0]_good_2.fastq -U ${out_dir}$samples->[0]_good_singletons.fastq -S ${out_dir}$samples->[0]_200.sam\n";
-    if ($labels)
-    {
-        $sams = "$sams".",${out_dir}$samples->[0]_200.sam";
-        $labels  = "$labels".",$samples->[0]";
-    }
-    else
-    {
-        $sams = "${out_dir}$samples->[0]_200.sam";
-        $labels  = "$samples->[0]";
-    }
+    open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh!\n"; # create a shell script for each read-pair set
+    print SCRIPT "#!/bin/bash\n";
+    print SCRIPT "#######################################################################\n#########         Assemble merged k-mer assemblies  k=${merge_k}     ##########\n#######################################################################\n";
+    print SCRIPT "set -o verbose\n";
+    print SCRIPT "PATH=/homes/sheltonj/abjc/velvet_1.2.08:/homes/sheltonj/abjc/oases_0.2.08:\${PATH}\n";
+    print SCRIPT "export PATH\n";
+    print SCRIPT "cd ${home}\n";
+    print SCRIPT "velveth mergedAssembly ${merge_k} -long ${project_name}_*/transcripts.fa\n";
+    print SCRIPT "velvetg mergedAssembly -read_trkg yes -conserveLong yes\n";
+    print SCRIPT "oases mergedAssembly -merge yes\n";
+    close (SCRIPT);
+}
 
 print "done\n";
 ##################################################################################
