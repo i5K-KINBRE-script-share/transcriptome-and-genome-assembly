@@ -91,9 +91,6 @@ for my $samples (@reads)
     open (QSUBS_CLEAN, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_clean.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_clean.sh!\n";
     print QSUBS_CLEAN '#!/bin/bash';
     print QSUBS_CLEAN "\n";
-    open (QSUBS_MAP, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_map.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_map.sh!\n";
-    print QSUBS_MAP '#!/bin/bash';
-    print QSUBS_MAP "\n";
     for my $file (0..$#r1)
     {
         #######################################################################
@@ -178,7 +175,7 @@ for my $samples (@reads)
         print SCRIPT "oases ${project_name}_${k}\n";
         ######### estimates memory requirements and write qsubs for beocat ###
         my $mem=30;
-        my $kmem=(-109635 + 18977*100 + 86326*177 + 233353*$count*3 - 51092*${k});
+        my $kmem=(-109635 + 18977*100 + 86326*400 + 233353*$count*2 - 51092*${k});
         $mem=(${kmem}/1000000);
         print QSUBS_SINGLEK "qsub -l h_rt=100:00:00,mem=${mem}G ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh\n";
 #        Ram required for velvetg = -109635 + 18977*ReadSize + 86326*GenomeSize + 233353*NumReads - 51092*K
@@ -187,6 +184,8 @@ for my $samples (@reads)
     #######################################################################
     #########   Assemble merged k-mer assemblies  k=${merge_k}   ##########
     #######################################################################
+    open (QSUBS_MERGE, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_merge.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_merge.sh!\n";
+    print QSUBS_MERGE "#!/bin/bash\n";
     close (SCRIPT);
     open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh!\n"; # create a shell script for each read-pair set
     print SCRIPT "#!/bin/bash\n";
@@ -199,6 +198,10 @@ for my $samples (@reads)
     print SCRIPT "velvetg mergedAssembly -read_trkg yes -conserveLong yes\n";
     print SCRIPT "oases mergedAssembly -merge yes\n";
     close (SCRIPT);
+    my $mem=30;
+    my $kmem=(-109635 + 18977*100 + 86326*400 + 233353*$count*2 - 51092*${merge_k});
+    $mem=(${kmem}/1000000);
+    print QSUBS_MERGE "qsub -l h_rt=100:00:00,mem=${mem}G ${home}/${project_name}_scripts/${project_name}_${merge_k}_assemble.sh\n";
 }
 
 print "done\n";
