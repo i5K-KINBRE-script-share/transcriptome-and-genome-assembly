@@ -230,9 +230,9 @@ print "done\n";
 ## style adapted from http://www.perlmonks.org/?node_id=489861 
 __END__
 
-=head1 NAME
+=head1 SYNOPSIS
 
-transcriptome_assembly_pipeline.pl - a package of scripts that ...
+transcriptome_assembly_pipeline.pl - The script writes scripts and qsubs to assemble illumina paired end reads into a de novo transcriptome. The script 1) converts illumina headers if the "-c" parameter is used, 2) cleans and deduplicates raw reads using Prinseq http://prinseq.sourceforge.net/manual.html, 3) index the reference genome for mapping, 4) reads are the assembled multiple times with a range of values of k, 5) these assemblies are merged with Oases using a merge kmer value, 6) then the merged assembly is clusted with CDHit to take the longest of similar putative transcripts, 7) finally assembly metrics are generated for all assemblies and read length and number are summarized before and after cleaning.
 
 =head1 USAGE
 
@@ -241,15 +241,14 @@ perl transcriptome_assembly_pipeline.pl [options]
  Documentation options:
    -help    brief help message
    -man	    full documentation
- Required options:
-   -r	     reference CMAP
-   -p	     project name (no spaces)
+ Recommended options:
+   -p	     project name (no spaces)(default = my_project)
    -s	     shortest kmer (default = 25)
    -l	     longest kmer (default = 65)
    -i	     kmer increments (default = 2)
    -m	     merge kmer (default = 39)
  Filtering options:
-   -n	     minimum read length
+   -n	     minimum read length (default = 90)
  Fastq format options:
    -c	     convert fastq headers
    
@@ -272,14 +271,30 @@ sample_data/sample_1_R1.fastq   sample_data/sample_1_R2.fastq
  
 If a sample has multiple fastq files for R1 and R2 separate these with commas. Example:
 sample_data/sample_1a_R1.fastq,sample_data/sample_1b_R1.fastq,sample_data/sample_1c_R1.fastq   sample_data/sample_1a_R2.fastq,sample_data/sample_1b_R2.fastq,sample_data/sample_1c_R2.fastq
+ 
+=item B<-s, --shortest_k>
+ 
+The minimum kmer length for single kmer assemblies. Default minimum kmer is 25bp.
+ 
+=item B<-l, --longtest_k>
+ 
+The maximum kmer length for single kmer assemblies. Default maximum kmer is 65bp.
+ 
+=item B<-i, --increments_k>
+ 
+The length by which the value of k increases for the next single kmer assembly. Default kmer is 2bp.
+ 
+=item B<-m, --merge_k>
+ 
+The kmer length used when merging single kmer assemblies. Default merge kmer is 39bp.
+ 
+=item B<-n, --min_read_length>
+ 
+The minimum read length. Reads shorter than this after cleaning will be discarded. Default minimum length is 90bp.
 
- =item B<-c, --convert_header>
+=item B<-c, --convert_header>
  
- If the illumina headers do not end in /1 or /2 use this parameter to indicat that headers need to be converted. Check your headers by typing "head [fasta filename]" and read more about illumina headers at http://en.wikipedia.org/wiki/Fastq#Illumina_sequence_identifiers.
- 
- =item B<-l, --min_len>
- 
- The minimum read length. Reads shorter than this after cleaning will be discarded. Default minimum length is 90bp.
+If the illumina headers do not end in /1 or /2 use this parameter to indicat that headers need to be converted. Check your headers by typing "head [fasta filename]" and read more about illumina headers at http://en.wikipedia.org/wiki/Fastq#Illumina_sequence_identifiers.
  
  
 =back
@@ -288,11 +303,45 @@ sample_data/sample_1a_R1.fastq,sample_data/sample_1b_R1.fastq,sample_data/sample
 
 B<OUTPUT DETAILS:>
 
-This appears when the manual is viewed!!!!
+see: https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/transcriptome_assembly_pipeline/transcriptome_assembly_LAB.md
 
 B<Test with sample datasets:>
+ 
+# Find a more detailed instructions at https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/transcriptome_assembly_pipeline/transcriptome_assembly_LAB.md
+ 
+# Clone the Git repositories
+ 
+git clone https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly
+git clone https://github.com/i5K-KINBRE-script-share/read-cleaning-format-conversion
+git clone https://github.com/i5K-KINBRE-script-share/genome-annotation-and-comparison
 
+# Make a working directory.
+ 
+mkdir de_novo_transcriptome
+cd de_novo_transcriptome
 
-perl transcriptome_assembly_pipeline.pl -r sample_data/sample.r.cmap --s_algn .9
+# Create symbolic links to subsampled raw RNA reads from the human breast cancer cell lines.
+ 
+ln -s /homes/bioinfo/RNA-Seq_sample/* ~/de_novo_transcriptome/
+ 
+# Write assembly scripts
+
+perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/transcriptome_assembly_pipeline/transcriptome_assembly_pipeline.pl -r cell_line_reads_assembly.txt -p cell_line -s 25 -l 39 -i 2 -n 35 -m 33
+ 
+# Clean raw reads. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
+ 
+bash ~/de_novo_transcriptome/cell_line_qsubs/cell_line_qsubs_clean.sh
+ 
+# Assemble single kmer transcriptomes. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
+ 
+ bash ~/de_novo_transcriptome/cell_line_qsubs/cell_line_qsubs_singlek.sh
+ 
+# Merge single kmer transcriptomes. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
+ 
+ bash ~/de_novo_transcriptome/cell_line_qsubs/cell_line_qsubs_merge.sh
+ 
+# Cluster merged assembly with CDH. Putative transcripts that share 80% identity over 80% of the length are clustered and the longest transcript is printed in the clustered fasta file. This step will also generate assembly metrics and summarize the cleaning step results.
+ 
+ bash ~/de_novo_transcriptome/cell_line_qsubs/cell_line_qsubs_cluster_and_qc.sh
 
 =cut
