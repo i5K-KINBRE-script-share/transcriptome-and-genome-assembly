@@ -96,6 +96,7 @@ Plot your N50 values from the ~/de_novo_transcriptome/assembly_metrics.csv file.
 1) How does your plot compare?
 
 2) If we consider N50 before and after the value that equals 50% of read length how do they compare?
+
 3) Are your results more similar to the OasesM paper or the Gruenheit et al. 2012 paper? Based on this, do you think that with increasing read length we can get higher quality final assemblies?
 
 
