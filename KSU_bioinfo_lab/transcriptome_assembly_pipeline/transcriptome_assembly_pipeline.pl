@@ -52,8 +52,8 @@ GetOptions (
               's|shortest_k:i' => \$shortest_k,
               'l|longest_k:i' => \$longest_k,
               'i|increment_k:i' => \$increment_k,
-              'i|merge_k:i' => \$merge_k,
-              'i|ins_length:i' => \$ins_length
+              'm|merge_k:i' => \$merge_k,
+              'x|ins_length:i' => \$ins_length
               )
 or pod2usage(2);
 pod2usage(1) if $help;
