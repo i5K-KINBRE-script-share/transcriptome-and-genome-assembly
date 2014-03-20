@@ -158,7 +158,7 @@ for my $samples (@reads)
     {
 
         close (SCRIPT);
-        open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_$k_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_$k_assemble.sh!\n"; # create a shell script for each read-pair set
+        open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh!\n"; # create a shell script for each read-pair set
         print SCRIPT "#!/bin/bash\n";
         print SCRIPT "#######################################################################\n#########         Assemble single k-mer assemblies  k=$k     ##########\n#######################################################################\n";
         print SCRIPT "set -o verbose\n";
