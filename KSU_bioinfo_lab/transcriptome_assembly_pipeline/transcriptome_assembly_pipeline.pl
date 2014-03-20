@@ -10,7 +10,6 @@ use strict;
 use warnings;
 use File::Basename; # enable manipulating of the full path
 use Cwd;
-use Cwd qw(abs_path);
 # use List::Util qw(max);
 # use List::Util qw(sum);
 # use Bio::SeqIO;
@@ -40,8 +39,7 @@ my $longest_k = 65,
 my $increment_k = 2,
 my $merge_k = 39;
 my $ins_length = 250;
-my $count = 0;
-
+my $count = 0; # count reads in files
 my $man = 0;
 my $help = 0;
 GetOptions (
@@ -119,8 +117,7 @@ for my $samples (@reads)
         #######################################################################
         ###### Estimate size of R1 library to estimate the mem needed #########
         #######################################################################
-        my $R1_abs = abs_path($r1[$file]);
-        open (TEST_READ,'<',"${R1_abs}") or die "can't open ${R1_abs}!\n";
+        open (TEST_READ,'<',"${home}/${filename}${suffix2}") or die "can't open ${home}/${filename}${suffix2}. You must use absolute paths in the read list file \"-r\" or cd to the directory with you reads before you call this script!\n";
         1 while( <TEST_READ> );
         my $count = ($. + $count);
         #######################################################################
