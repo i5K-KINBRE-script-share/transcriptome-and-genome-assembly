@@ -4,7 +4,7 @@ We will be using the script "transcriptome_assembly_pipeline.pl" to organize our
 
 To find out more about the parameters for "transcriptome_assembly_pipeline.pl" run "perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/transcriptome_assembly_pipeline/transcriptome_assembly_pipeline.pl -man" or visit its manual at https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/tree/master/KSU_bioinfo_lab/transcriptome_assembly_pipeline/transcriptome_assembly_README.md.
 
-###Step 1: Clone the Git repository 
+###Step 1: Clone the Git repositories 
 
         git clone https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly
         git clone https://github.com/i5K-KINBRE-script-share/read-cleaning-format-conversion
@@ -66,5 +66,28 @@ Merge single kmer transcriptomes. When these jobs are complete go to next step. 
 Cluster merged assembly with CDH. Putative transcripts that share 80% identity over 80% of the length are clustered and the longest transcript is printed in the clustered fasta file. This step will also generate assembly metrics and summarize the cleaning step results.
 
         bash ~/de_novo_transcriptome/cell_line_qsubs/cell_line_qsubs_cluster_and_qc.sh
+        
+        
+###Why so many assemblies?
+
+The authors of the Oases-M publication compare various single k-mer assemblies and a merged multiple k-mer assembly for transcript completeness, overall sensitivity, etc. These results show the tradeoff between sensitivity of shorter k-mers (producing longer transcripts and/or more of the rare transcripts but more error-ridden transcripts) and specificity of longer k-mers (shorter transcripts and/or fewer of the rare transcripts but more accurate assemblies). 
+
+The authors also determine Oases-M is more sensitive and less specific than Trinity. Additionally, they make the case that de novo assemblies may be even lower quality, in comparison to reference-based assemblies, than suggested by the Trinity paper because the gene set used there excluded rare transcripts. Of course increased depth of coverage can increase both assembly sensitivity and specificity.
+
+Here are the basic steps outlined in the paper:
+I) Run assembler at several k-mer lengths (sensitive (smaller k ) higher quality (larger k))
+Velvet- makes unique contigs (analogous to the inchworm from Trinity); the user makes several assemblies with various k-mer lengths
+ Oases- clusters unitigs into "loci" (analogous to chrysalis) and constructs transcript "isoforms" (analogous to butterfly)
+II) Merge these assemblies
+
+We have added raw read cleaning with Prinseq as a preprocessing step. Basecalling errors in reads increase the complexity of final de bruijn graphs and can erroneously fragment or increase redundancy in the final assembly. We also used Prinseq to deduplicate identical reads because these do not add information to the assembly but take the assembly time and memory to process.
+
+We have also used CDHit to cluster similar putative transcripts because even with the Oases merge step de novo assemblies tend to be highly redundant. Clustering means that we can utilize our merged assembly when the goal is to find isoforms or members of a gene family and the clustered assembly to estimate expression more at the gene level.
+
+###Evaluate your results
+
+        
+        
+        
 
 
