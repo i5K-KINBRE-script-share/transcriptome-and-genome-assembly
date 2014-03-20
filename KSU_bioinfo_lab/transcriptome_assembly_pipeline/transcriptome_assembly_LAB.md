@@ -41,7 +41,10 @@ Your output will look similar to the output below for the sample data. Because t
 
 Step 4: Run prinseq and the assembly scripts
 
-## remember to cat reads!!!!
+        perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/transcriptome_assembly_pipeline/transcriptome_assembly_pipeline.pl -r cell_line_reads_assembly.txt -p cell_line -s 25 -l 41 -i 2 
+
+
+## remember to change prinseq commands!!!!
 
 
 transcriptome_assembly_pipeline.pl
