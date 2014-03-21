@@ -34,12 +34,14 @@ print "########################################################################\
 my ($r_list,$clean_read_file1,$clean_read_file2,$clean_read_singletons);
 my $project_name = "my_project";
 my $convert_header = 0;
-my $shortest_k = 25,
-my $longest_k = 65,
-my $increment_k = 2,
-my $merge_k = 39;
-my $min_read_length = 90;
+my $shortest_k = 21; # must be odd
+my $longest_k = 91; # must be odd
+my $increment_k = 10; # must be even
+my $merge_k = 61; # must be odd
+my $min_read_length = 93;
 my $count = 0; # count reads in files
+my $nodes=32; #Number of processors to use
+my $mem_per_core=8; #Gigs of memory to use
 my $man = 0;
 my $help = 0;
 GetOptions (
@@ -52,7 +54,9 @@ GetOptions (
               'l|longest_k:i' => \$longest_k,
               'i|increment_k:i' => \$increment_k,
               'm|merge_k:i' => \$merge_k,
-              'n|min_read_length:i' => \$min_read_length
+              'n|min_read_length:i' => \$min_read_length,
+              'nodes:i' => \$nodes,
+              'mem_per_core:i' => \$mem_per_core
               )
 or pod2usage(2);
 pod2usage(1) if $help;
@@ -78,11 +82,16 @@ while (<READ_LIST>)
 ###############################################################################
 for my $samples (@reads)
 {
-    my @r1 = split(',',$samples->[0]); # get list of forward reads
-    my @r2 = split(',',$samples->[1]); # get list of reverse reads
+    my @r1 = split(',',$samples->[1]); # get list of forward reads
+    my @r2 = split(',',$samples->[2]); # get list of reverse reads
     if (scalar(@r1) != scalar(@r2))
     {
         print "Error the number of forward and reverse read files does not match!\n"; # each forward file must have a corresponding reverse file
+        exit;
+    }
+    if (($samples->[0] ne "pe") || ($samples->[0] ne "mp"))
+    {
+        print "Error \"pe\" or \"mp\" are the only library types that this script accepts. \"$samples->[0]\" was used instead in $r_list. See description of the \"-r\" parameter by typing \"perl AssembleG.pl -man\"\n";
         exit;
     }
     #######################################################################
@@ -149,35 +158,42 @@ for my $samples (@reads)
     print SCRIPT "cat$clean_read_file1 > ${home}/${project_name}_good_1.fastq # concatenate fasta\n";
     print SCRIPT "cat$clean_read_file2 > ${home}/${project_name}_good_2.fastq # concatenate fasta\n";
     print SCRIPT "cat$clean_read_singletons > ${home}/${project_name}_good_singletons.fastq # concatenate single fasta\n";
-    ######### shuffle sequences (if your pairs are unbroken but in two fastq files) ##########
-    print SCRIPT "perl /homes/sheltonj/abjc/velvet_1.2.08/contrib/shuffleSequences_fasta/shuffleSequences_fastq.pl ${home}/${project_name}_good_1.fastq ${home}/${project_name}_good_2.fastq ${home}/${project_name}_good_shuff_pairs.fastq\n";
+#    ######### shuffle sequences (if your pairs are unbroken but in two fastq files) ##########
+#    print SCRIPT "perl /homes/sheltonj/abjc/velvet_1.2.08/contrib/shuffleSequences_fasta/shuffleSequences_fastq.pl ${home}/${project_name}_good_1.fastq ${home}/${project_name}_good_2.fastq ${home}/${project_name}_good_shuff_pairs.fastq\n";
     
     #######################################################################
     #########         Assemble single k-mer assemblies           ##########
     #######################################################################
     open (QSUBS_SINGLEK, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_singlek.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_map.sh!\n";
     print QSUBS_SINGLEK "#!/bin/bash\n";
-
-
+    #######################################################################
+    #########       Adjust number of nodes for longer kmers      ##########
+    #######################################################################
     for ( my $k = $shortest_k; $k <= $longest_k; $k += $increment_k )
     {
+        if ($k > $longest_k/2)
+        {
+            $nodes = $nodes/2; # Shorter kmers require a higher value for ${nodes}. ${nodes}=64 worked for a 200Mb genome when k = 21 to 59. ${nodes}=32 worked for the same genome when k = 61 to 91.Therefore, we divide $nodes by 2 for the longest kmer values.
+        }
 
         close (SCRIPT);
         open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh!\n"; # create a shell script for each read-pair set
         print SCRIPT "#!/bin/bash\n";
         print SCRIPT "#######################################################################\n#########         Assemble single k-mer assemblies  k=$k     ##########\n#######################################################################\n";
         print SCRIPT "set -o verbose\n";
-        print SCRIPT "PATH=/homes/sheltonj/abjc/velvet_1.2.08:/homes/sheltonj/abjc/oases_0.2.08:\${PATH}\n";
-        print SCRIPT "export PATH\n";
+        print SCRIPT "export PATH=\$(find /homes/bjsco/abyss-1.3.4 -type d | tr '\n' ':' | sed 's/:\$//'):\${PATH}\n";
         print SCRIPT "cd ${home}\n";
-        print SCRIPT "velveth ${project_name}_${k} ${k} -fastq -short ${home}/${project_name}_good_singletons.fastq -shortPaired -interleaved -fastq ${home}/${project_name}_good_shuff_pairs.fastq\n";
-        print SCRIPT "velvetg ${project_name}_${k} -read_trkg yes\n";
-        print SCRIPT "oases ${project_name}_${k}\n";
+        print SCRIPT "/homes/bjsco/local/bin/abyss-pe name=${project_name}-${k} k=${k} np=\$NSLOTS lib=\'pe1\' pe1=\'${base_dir}${read_1} ${base_dir}${read_2}\' se=\'${unpaired_reads_and_or_unitigs}\' -C ${outdir}";
+
+#        print SCRIPT "velveth ${project_name}_${k} ${k} -fastq -short ${home}/${project_name}_good_singletons.fastq -shortPaired -interleaved -fastq ${home}/${project_name}_good_shuff_pairs.fastq\n";
+#        print SCRIPT "velvetg ${project_name}_${k} -read_trkg yes\n";
+#        print SCRIPT "oases ${project_name}_${k}\n";
         ######### estimates memory requirements and write qsubs for beocat ###
-        my $mem=30;
-        my $kmem=(-109635 + 18977*100 + 86326*400 + 233353*$count*2 - 51092*${k});
-        $mem=(${kmem}/1000000);
-        print QSUBS_SINGLEK "qsub -l h_rt=100:00:00,mem=${mem}G ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh\n";
+#        my $mem=30;
+#        my $kmem=(-109635 + 18977*100 + 86326*400 + 233353*$count*2 - 51092*${k});
+#        $mem=(${kmem}/1000000);
+        `qsub -l h_rt=48:00:00,mem=${mem_per_core}G -pe single ${nodes} ./${script}`;
+#        print QSUBS_SINGLEK "qsub -l h_rt=100:00:00,mem=${mem}G ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh\n";
 #        Ram required for velvetg = -109635 + 18977*ReadSize + 86326*GenomeSize + 233353*NumReads - 51092*K
 
     }
@@ -243,12 +259,12 @@ perl AssembleG.pl [options]
    -man	    full documentation
  Recommended options:
    -p	     project name (no spaces)(default = my_project)
-   -s	     shortest kmer (default = 25)
-   -l	     longest kmer (default = 65)
-   -i	     kmer increments (default = 2)
-   -m	     merge kmer (default = 39)
+   -s	     shortest kmer (default = 21)
+   -l	     longest kmer (default = 91)
+   -i	     kmer increments (default = 10)
+   -m	     merge kmer (default = 61)
  Filtering options:
-   -n	     minimum read length (default = 90)
+   -n	     minimum read length (default = 93)
  Fastq format options:
    -c	     convert fastq headers
    
@@ -266,31 +282,37 @@ Prints the more detailed manual page with output details and examples and exits.
 
 =item B<-r, --r_list>
  
-The filename of the user provided list of read files. The file should be tab separated with the first read file, then the second read file. Example:
-sample_data/sample_1_R1.fastq   sample_data/sample_1_R2.fastq
+The filename of the user provided list of read files. The file should be tab separated. The first column should be the library type (either "pe" for paired end or "mp" for mate paired). Paired end or "pe" libraries are used to assemble sequence. Your library should be labeled "mp" if it is a long distance mate-pair library. "mp" libraries are not used for assembly, only for scaffolding. See https://github.com/bcgsc/abyss#assembling-multiple-libraries.
+ 
+The next column is the first read file, then the second read file. Example:
+ 
+pe sample_data/sample_1_R1.fastq   sample_data/sample_1_R2.fastq
+mp sample_data/sample_3_R1.fastq   sample_data/sample_3_R2.fastq
  
 If a sample has multiple fastq files for R1 and R2 separate these with commas. Example:
-sample_data/sample_1a_R1.fastq,sample_data/sample_1b_R1.fastq,sample_data/sample_1c_R1.fastq   sample_data/sample_1a_R2.fastq,sample_data/sample_1b_R2.fastq,sample_data/sample_1c_R2.fastq
+pe sample_data/sample_1a_R1.fastq,sample_data/sample_1b_R1.fastq,sample_data/sample_1c_R1.fastq   sample_data/sample_1a_R2.fastq,sample_data/sample_1b_R2.fastq,sample_data/sample_1c_R2.fastq
+pe sample_data/sample_2a_R1.fastq,sample_data/sample_2b_R1.fastq,sample_data/sample_2c_R1.fastq   sample_data/sample_2a_R2.fastq,sample_data/sample_2b_R2.fastq,sample_data/sample_2c_R2.fastq
+mp sample_data/sample_3a_R1.fastq,sample_data/sample_3b_R1.fastq,sample_data/sample_3c_R1.fastq   sample_data/sample_3a_R2.fastq,sample_data/sample_3b_R2.fastq,sample_data/sample_3c_R2.fastq
  
 =item B<-s, --shortest_k>
  
-The minimum kmer length for single kmer assemblies. Default minimum kmer is 25bp.
+The minimum kmer length for single kmer assemblies. Default minimum kmer is 21bp.
  
 =item B<-l, --longtest_k>
  
-The maximum kmer length for single kmer assemblies. Default maximum kmer is 65bp.
+The maximum kmer length for single kmer assemblies. Default maximum kmer is 91bp.This value must be even.
  
 =item B<-i, --increments_k>
  
-The length by which the value of k increases for the next single kmer assembly. Default kmer is 2bp.
+The length by which the value of k increases for the next single kmer assembly. Default kmer is 10bp. This value must be even.
  
 =item B<-m, --merge_k>
  
-The kmer length used when merging single kmer assemblies. Default merge kmer is 39bp.
+The kmer length used when merging single kmer assemblies. Default merge kmer is 61bp. This value must be odd.
  
 =item B<-n, --min_read_length>
  
-The minimum read length. Reads shorter than this after cleaning will be discarded. Default minimum length is 90bp.
+The minimum read length. Reads shorter than this after cleaning will be discarded. Default minimum length is 93bp.
 
 =item B<-c, --convert_header>
  
@@ -307,7 +329,7 @@ see: https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembl
 
 B<Test with sample datasets:>
  
-# Find a more detailed instructions at https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/transcriptome_assembly_pipeline/transcriptome_assembly_LAB.md
+# Find a more detailed instructions at https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/AssembleG/AssembleG_LAB.md
  
 # Clone the Git repositories
  
@@ -326,26 +348,26 @@ ln -s /homes/bioinfo/RNA-Seq_sample/* ~/de_novo_genome/
  
 # Write assembly scripts
 
-perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/transcriptome_assembly_pipeline/AssembleG.pl -r cell_line_reads_assembly.txt -p cell_line -s 25 -l 39 -i 2 -n 35 -m 33
+perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/transcriptome_assembly_pipeline/AssembleG.pl -r S_aureus_reads_assembly.txt -p S_aureus -s 25 -l 39 -i 2 -n 35 -m 33
  
 # Clean raw reads. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
  
-bash ~/de_novo_genome/cell_line_qsubs/cell_line_qsubs_clean.sh
+bash ~/de_novo_genome/S_aureus_qsubs/S_aureus_qsubs_clean.sh
  
 # Concatenate cleaned reads and shuffle sequences for Oases
  
-bash ~/de_novo_genome/cell_line_scripts/cat_reads.sh
+bash ~/de_novo_genome/S_aureus_scripts/cat_reads.sh
  
 # Assemble single kmer transcriptomes. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
  
- bash ~/de_novo_genome/cell_line_qsubs/cell_line_qsubs_singlek.sh
+ bash ~/de_novo_genome/S_aureus_qsubs/S_aureus_qsubs_singlek.sh
  
 # Merge single kmer transcriptomes. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
  
- bash ~/de_novo_genome/cell_line_qsubs/cell_line_qsubs_merge.sh
+ bash ~/de_novo_genome/S_aureus_qsubs/S_aureus_qsubs_merge.sh
  
 # Cluster merged assembly with CDH. Putative transcripts that share 80% identity over 80% of the length are clustered and the longest transcript is printed in the clustered fasta file. This step will also generate assembly metrics and summarize the cleaning step results.
  
- bash ~/de_novo_genome/cell_line_qsubs/cell_line_qsubs_cluster_and_qc.sh
+ bash ~/de_novo_genome/S_aureus_qsubs/S_aureus_qsubs_cluster_and_qc.sh
 
 =cut

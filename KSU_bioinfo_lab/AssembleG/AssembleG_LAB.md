@@ -31,45 +31,44 @@ Check to see if your fastq headers end in "/1" or "/2" (if they do not you must 
 
         head ~/de_novo_genome/*_1.fastq
         
-Your output will look similar to the output below for the sample data. Because these reads end in "/1" or "/2" we will not add "-c" when we call "AssembleG.pl".
+Your output will look similar to the output below for the sample data. Because these headers end in "/1" or "/2" we will not add "-c" when we call "AssembleG.pl".
 
-        ==> /homes/bioinfo/de_novo_genome/BT20_paired-end_RNA-seq_subsampled_1.fastq <==
-        @HWUSI-EAS1794_0001_FC61KOJ:4:30:19389:13787#0/1
-        GCGGCCCGGCCCCGGCCCCCTGCTCGTTGGCTGTGGCAGGGCCGCCGTGG
+        @ERR033278.1 IL35_4330:1:1:1008:1653#1/1
+        NATAGTTAATGTATACTTTCGCTTCTTCAGAATCTACTTTATTATCTTTAGTAC
         +
-        HHHHHHHGEHHHHDHDHHHHBDGBBC@CAC?8C><AAAACD>DDB?####
-        @HWUSI-EAS1794_0001_FC61KOJ:4:57:10821:2162#0/1
-        CAGATATCGAAGATGAAGACTTAAAGTTAGAGCTGCGACGACTACGAGAT
+        $**/);)%.()(/()6=667<18614--<=6/?936==8-*.*)1$)/'',*7.
+        @ERR033278.2 IL35_4330:1:1:1009:6252#1/1
+        NTACCACTACCAAATACTTCTGTTAACCCACCTTTATCATATGATTCGAATAAT
         +
-        IIHIIIIIIHHIHIIIIIEIIIIIIIIIIIHHII@IHIIIIHHEIIHIID
-        @HWUSI-EAS1794_0001_FC61KOJ:4:75:5014:13576#0/1
-        CTCAGCCACCAGCAGCGGCACCCCCATCTGCAGTTGGCTCTTCTGCTGCT
+        $,*3:),/5.A?:A?$'1*,88???76(6:/0/3,$'*'.,,,&.*+,;(:()'
+        @ERR033278.3 IL35_4330:1:1:1009:6338#1/1
+        NTTAACAGAACGTCAACGTGATATATTATTGTATGGTTCGGGTGCCAAAGAAAT
         
-Call "AssembleG.pl". Our reads are only 50 bp long so we are setting our minimum read length to 35 bp. Generally you want to keep this length ~10 bp shorter than our read length. We would also raise the longest kmer value "-l" to ~61 if our reads were 100bp.
+Call "AssembleG.pl". Our reads are only ~50 bp long so we are setting our minimum read length to 35 bp. Generally you want to keep this length ~10 bp shorter than our read length. We would also raise the longest kmer value "-l" to ~61 if our reads were 100bp.
 
-        perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/AssembleG/AssembleG.pl -r cell_line_reads_assembly.txt -p cell_line -s 25 -l 39 -i 2 -n 35 -m 33
+        perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/AssembleG/AssembleG.pl -r S_aureus_reads_assembly.txt -p S_aureus -s 25 -l 39 -i 2 -n 35 -m 33
 
 ###Step 4: Run prinseq and the assembly scripts
 
-Clean raw reads. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session. Download the ".gd" files in the "~/de_novo_genome/cell_line__prinseq" directory and upload them to http://edwards.sdsu.edu/cgi-bin/prinseq/prinseq.cgi?report=1 to evaluate read quality pre and post cleaning.
+Clean raw reads. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session. Download the ".gd" files in the "~/de_novo_genome/S_aureus_prinseq" directory and upload them to http://edwards.sdsu.edu/cgi-bin/prinseq/prinseq.cgi?report=1 to evaluate read quality pre and post cleaning.
 
-        bash ~/de_novo_genome/cell_line_qsubs/cell_line_qsubs_clean.sh
+        bash ~/de_novo_genome/S_aureus_qsubs/S_aureus_qsubs_clean.sh
 
 Concatenate cleaned reads and shuffle sequences for Oases
 
-        bash ~/de_novo_genome/cell_line_scripts/cat_reads.sh
+        bash ~/de_novo_genome/S_aureus_scripts/cat_reads.sh
         
 Assemble single kmer transcriptomes. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
 
-        bash ~/de_novo_genome/cell_line_qsubs/cell_line_qsubs_singlek.sh
+        bash ~/de_novo_genome/S_aureus_qsubs/S_aureus_qsubs_singlek.sh
         
 Merge single kmer transcriptomes. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
 
-        bash ~/de_novo_genome/cell_line_qsubs/cell_line_qsubs_merge.sh
+        bash ~/de_novo_genome/S_aureus_qsubs/S_aureus_qsubs_merge.sh
         
 Cluster merged assembly with CDH. Putative transcripts that share 80% identity over 80% of the length are clustered and the longest transcript is printed in the clustered fasta file. This step will also generate assembly metrics and summarize the cleaning step results.
 
-        bash ~/de_novo_genome/cell_line_qsubs/cell_line_qsubs_cluster_and_qc.sh
+        bash ~/de_novo_genome/S_aureus_qsubs/S_aureus_qsubs_cluster_and_qc.sh
         
         
 ###Why so many assemblies?

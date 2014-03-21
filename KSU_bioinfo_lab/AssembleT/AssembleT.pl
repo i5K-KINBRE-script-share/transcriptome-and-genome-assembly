@@ -34,10 +34,10 @@ print "########################################################################\
 my ($r_list,$clean_read_file1,$clean_read_file2,$clean_read_singletons);
 my $project_name = "my_project";
 my $convert_header = 0;
-my $shortest_k = 25,
-my $longest_k = 65,
-my $increment_k = 2,
-my $merge_k = 39;
+my $shortest_k = 25; # must by odd
+my $longest_k = 65; # must by odd
+my $increment_k = 2; # must by even
+my $merge_k = 39; # must by odd
 my $min_read_length = 90;
 my $count = 0; # count reads in files
 my $man = 0;
@@ -274,19 +274,19 @@ sample_data/sample_1a_R1.fastq,sample_data/sample_1b_R1.fastq,sample_data/sample
  
 =item B<-s, --shortest_k>
  
-The minimum kmer length for single kmer assemblies. Default minimum kmer is 25bp.
+The minimum kmer length for single kmer assemblies. Default minimum kmer is 25bp. This value must by odd.
  
 =item B<-l, --longtest_k>
  
-The maximum kmer length for single kmer assemblies. Default maximum kmer is 65bp.
+The maximum kmer length for single kmer assemblies. Default maximum kmer is 65bp. This value must by odd.
  
 =item B<-i, --increments_k>
  
-The length by which the value of k increases for the next single kmer assembly. Default kmer is 2bp.
+The length by which the value of k increases for the next single kmer assembly. Default kmer is 2bp. This value must by even.
  
 =item B<-m, --merge_k>
  
-The kmer length used when merging single kmer assemblies. Default merge kmer is 39bp.
+The kmer length used when merging single kmer assemblies. Default merge kmer is 39bp. This value must by odd.
  
 =item B<-n, --min_read_length>
  
