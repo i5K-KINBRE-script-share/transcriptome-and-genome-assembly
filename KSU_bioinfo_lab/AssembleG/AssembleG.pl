@@ -100,7 +100,7 @@ for my $samples (@reads)
     #######################################################################
     #########   Check that library type was correctly specified   #########
     #######################################################################
-    if (($samples->[0] ne "pe") || ($samples->[0] ne "mp"))
+    unless (($samples->[0] eq "pe") || ($samples->[0] eq "mp"))
     {
         print "Error \"pe\" or \"mp\" are the only library types that this script accepts. \"$samples->[0]\" was used instead in $r_list. See description of the \"-r\" parameter by typing \"perl AssembleG.pl -man\"\n";
         exit;
