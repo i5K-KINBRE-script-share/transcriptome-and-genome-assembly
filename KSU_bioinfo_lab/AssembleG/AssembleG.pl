@@ -211,8 +211,8 @@ print SCRIPT "##################################################################
 print SCRIPT "set -o verbose\n";
 print SCRIPT "export PATH=\$(find /homes/bjsco/abyss-1.3.4 -type d | tr '\n' ':' | sed 's/:\$//'):\${PATH}\n"; # get all paths in the Abyss directory
 print SCRIPT "cd ${home}\n";
-print SCRIPT "/homes/bjsco/local/bin/abyss-pe name=${project_name}-merge-${merge_k} k=${k} np=\$NSLOTS ${lib_code}${libx_code}${se_lib_code} -C ${home}/${project_name}/${project_name}_merge_${merge_k}\n";
-print QSUBS_MERGE "qsub -l h_rt=48:00:00,mem=${mem_per_core}G -pe single ${nodes} ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh\n"
+print SCRIPT "/homes/bjsco/local/bin/abyss-pe name=${project_name}-merge-${merge_k} k=${merge_k} np=\$NSLOTS ${lib_code}${libx_code}${se_lib_code} -C ${home}/${project_name}/${project_name}_merge_${merge_k}\n";
+print QSUBS_MERGE "qsub -l h_rt=48:00:00,mem=${mem_per_core}G -pe single ${nodes} ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh\n";
 close (SCRIPT);
 #######################################################################
 #########    QC assemblies and summarize cleaning steps      ##########
