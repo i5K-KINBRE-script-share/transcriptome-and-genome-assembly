@@ -31,7 +31,7 @@ print "########################################################################\
 ###############################################################################
 ##############                get arguments                  ##################
 ###############################################################################
-my ($r_list,$clean_read_file1,$clean_read_file2,$clean_read_singletons);
+my ($r_list,$clean_read_file1,$clean_read_file2,$clean_read_singletons,$lib_name);
 my $project_name = "my_project";
 my $convert_header = 0;
 my $shortest_k = 21; # must be odd
@@ -42,6 +42,9 @@ my $min_read_length = 93;
 my $count = 0; # count reads in files
 my $nodes=32; #Number of processors to use
 my $mem_per_core=8; #Gigs of memory to use
+my $lib_count = 1;
+my $libx_code = ''; #list of libraries and fastq files
+my $lib_code = "lib=\'"; #list of libraries
 my $man = 0;
 my $help = 0;
 GetOptions (
@@ -82,13 +85,21 @@ while (<READ_LIST>)
 ###############################################################################
 for my $samples (@reads)
 {
+    $clean_read_file1 = ''; # initialize R1 and R2 for each library
+    $clean_read_file2 = '';
     my @r1 = split(',',$samples->[1]); # get list of forward reads
     my @r2 = split(',',$samples->[2]); # get list of reverse reads
+    #######################################################################
+    ######### Check that read fastq files each have a matching pair #######
+    #######################################################################
     if (scalar(@r1) != scalar(@r2))
     {
         print "Error the number of forward and reverse read files does not match!\n"; # each forward file must have a corresponding reverse file
         exit;
     }
+    #######################################################################
+    #########   Check that library type was correctly specified   #########
+    #######################################################################
     if (($samples->[0] ne "pe") || ($samples->[0] ne "mp"))
     {
         print "Error \"pe\" or \"mp\" are the only library types that this script accepts. \"$samples->[0]\" was used instead in $r_list. See description of the \"-r\" parameter by typing \"perl AssembleG.pl -man\"\n";
@@ -98,34 +109,25 @@ for my $samples (@reads)
     ############ Convert headers of illumina paired-end data ##############
     #######################################################################
     open (QSUBS_CLEAN, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_clean.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_clean.sh!\n";
-    print QSUBS_CLEAN '#!/bin/bash';
-    print QSUBS_CLEAN "\n";
+    print QSUBS_CLEAN "#!/bin/bash\n";
     for my $file (0..$#r1)
     {
         #######################################################################
-        ###### Split read filenames into usefull parts for renaming   #########
+        ###### Split read filenames into useful parts for renaming    #########
         # and avoiding relative paths (some software disliked relative paths) #
         #######################################################################
         my (${filename}, ${directories}, ${suffix}) = fileparse($r1[$file],'\..*'); # break appart filenames
         my (${filename2}, ${directories2}, ${suffix2}) = fileparse($r2[$file],'\..*'); # break appart filenames
         open (SCRIPT, '>', "${home}/${project_name}_scripts/${filename}_clean.sh") or die "Can't open ${home}/${project_name}_scripts/${filename}_clean.sh!\n"; # create a shell script for each read-pair set
-        print SCRIPT '#!/bin/bash';
-        print SCRIPT "\n";
+        print SCRIPT "#!/bin/bash\n";
         if ($convert_header)
         {
             print SCRIPT "#######################################################################\n############ Convert headers of illumina paired-end data ##############\n#######################################################################\n";
             print SCRIPT "cat $r1[$file] | awk \'{if (NR % 4 == 1) {split(\$1, arr, \":\"); printf \"%s_%s:%s:%s:%s:%s#0/%s\\n\", arr[1], arr[3], arr[4], arr[5], arr[6], arr[7], substr(\$2, 1, 1), \$0} else if (NR % 4 == 3){print \"+\"} else {print \$0} }\' > ${home}/${filename}_header.fastq\n"; # Convert headers for R1
             $r1[$file] = "${home}/${filename}_header.fastq"; # redefine R1
             print SCRIPT "cat $r2[$file] | awk \'{if (NR % 4 == 1) {split(\$1, arr, \":\"); printf \"%s_%s:%s:%s:%s:%s#0/%s\\n\", arr[1], arr[3], arr[4], arr[5], arr[6], arr[7], substr(\$2, 1, 1), \$0} else if (NR % 4 == 3){print \"+\"} else {print \$0} }\' > ${home}/${filename2}_header.fastq\n"; # Convert headers for R2
-            $r2[$file] = "${home}/${filename2}_header.fastq"; #redefine R2
-            
+            $r2[$file] = "${home}/${filename2}_header.fastq"; #redefine R2            
         }
-        #######################################################################
-        ###### Estimate size of R1 library to estimate the mem needed #########
-        #######################################################################
-        open (TEST_READ,'<',"${home}/${filename}${suffix2}") or die "can't open ${home}/${filename}${suffix2}. You must use absolute paths in the read list file \"-r\" or cd to the directory with you reads before you call this script!\n";
-        1 while( <TEST_READ> );
-        my $count = ($. + $count);
         #######################################################################
         ######### Clean reads for low quality without de-duplicating ##########
         #######################################################################
@@ -135,7 +137,9 @@ for my $samples (@reads)
         print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq ${home}/${filename}_good_1.fastq -fastq2 ${home}/${filename}_good_2.fastq -out_good null -graph_data ${home}/${project_name}_prinseq/${filename}_cleaned.gd -out_bad null\n"; # cleaned metrics on paired reads
         print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq ${home}/${filename}_good_1_singletons.fastq -out_good null -graph_data ${home}/${project_name}_prinseq/${filename}_cleaned_1_singletons.gd -out_bad null\n"; # cleaned metrics on singletons (reads where only one mate passed the qc)
         print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq ${home}/${filename}_good_2_singletons.fastq -out_good null -graph_data ${home}/${project_name}_prinseq/${filename}_cleaned_2_singletons.gd -out_bad null\n"; # cleaned metrics on singletons (reads where only one mate passed the qc)
-
+        #######################################################################
+        #########      List reads files to concatinante later        ##########
+        #######################################################################
         if ($clean_read_file1)
         {
             $clean_read_file1 = "$clean_read_file1"." ${home}/${filename}_good_1.fastq";
@@ -153,92 +157,72 @@ for my $samples (@reads)
     #######################################################################
     #########            Concantinate clean reads                ##########
     #######################################################################
-    open (SCRIPT, '>', "${home}/${project_name}_scripts/cat_reads.sh") or die "Can't open ${home}/${project_name}_scripts/cat_reads.sh!\n"; # create a shell script
+    open (SCRIPT, '>>', "${home}/${project_name}_scripts/cat_reads.sh") or die "Can't open ${home}/${project_name}_scripts/cat_reads.sh!\n"; # create a shell script
     print SCRIPT "#!/bin/bash\n";
-    print SCRIPT "cat$clean_read_file1 > ${home}/${project_name}_good_1.fastq # concatenate fasta\n";
-    print SCRIPT "cat$clean_read_file2 > ${home}/${project_name}_good_2.fastq # concatenate fasta\n";
-    print SCRIPT "cat$clean_read_singletons > ${home}/${project_name}_good_singletons.fastq # concatenate single fasta\n";
-#    ######### shuffle sequences (if your pairs are unbroken but in two fastq files) ##########
-#    print SCRIPT "perl /homes/sheltonj/abjc/velvet_1.2.08/contrib/shuffleSequences_fasta/shuffleSequences_fastq.pl ${home}/${project_name}_good_1.fastq ${home}/${project_name}_good_2.fastq ${home}/${project_name}_good_shuff_pairs.fastq\n";
-    
+    $lib_name= "${lib_name}${lib_count}";
+    print SCRIPT "cat$clean_read_file1 > ${home}/${project_name}_${lib_name}_good_1.fastq # concatenate fasta\n";
+    print SCRIPT "cat$clean_read_file2 > ${home}/${project_name}_${lib_name}_good_2.fastq # concatenate fasta\n";
     #######################################################################
-    #########         Assemble single k-mer assemblies           ##########
+    #########       Write lists of reads for each library        ##########
     #######################################################################
-    open (QSUBS_SINGLEK, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_singlek.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_map.sh!\n";
-    print QSUBS_SINGLEK "#!/bin/bash\n";
+    ++$lib_count;
+    $libx_code = "$libx_code"."${lib_name}=\'${home}/${project_name}_${lib_name}_good_1.fastq ${home}/${project_name}_${lib_name}_good_2.fastq\' "; # append to list of pe or mp libraries
+    $lib_code = "$lib_code"."${lib_name} ";
+}
+my $se_lib_code = "se=\'$clean_read_singletons\'"; # write list of se libraries
+$lib_code = "$lib_code"."\'"; # close list of library names
+#######################################################################
+#########         Assemble single k-mer assemblies           ##########
+#######################################################################
+open (QSUBS_SINGLEK, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_singlek.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_map.sh!\n";
+print QSUBS_SINGLEK "#!/bin/bash\n";
+#######################################################################
+#########       Write scripts for single k-mer assemblies    ##########
+#######################################################################
+for ( my $k = $shortest_k; $k <= $longest_k; $k += $increment_k )
+{
+    if ($k > $longest_k/2)
+    {
+        $nodes = $nodes/2; # Shorter kmers require a higher value for ${nodes}. ${nodes}=64 worked for a 200Mb genome when k = 21 to 59. ${nodes}=32 worked for the same genome when k = 61 to 91.Therefore, we divide $nodes by 2 for the longest kmer values.
+    }
     #######################################################################
     #########       Adjust number of nodes for longer kmers      ##########
     #######################################################################
-    for ( my $k = $shortest_k; $k <= $longest_k; $k += $increment_k )
-    {
-        if ($k > $longest_k/2)
-        {
-            $nodes = $nodes/2; # Shorter kmers require a higher value for ${nodes}. ${nodes}=64 worked for a 200Mb genome when k = 21 to 59. ${nodes}=32 worked for the same genome when k = 61 to 91.Therefore, we divide $nodes by 2 for the longest kmer values.
-        }
-
-        close (SCRIPT);
-        open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh!\n"; # create a shell script for each read-pair set
-        print SCRIPT "#!/bin/bash\n";
-        print SCRIPT "#######################################################################\n#########         Assemble single k-mer assemblies  k=$k     ##########\n#######################################################################\n";
-        print SCRIPT "set -o verbose\n";
-        print SCRIPT "export PATH=\$(find /homes/bjsco/abyss-1.3.4 -type d | tr '\n' ':' | sed 's/:\$//'):\${PATH}\n";
-        print SCRIPT "cd ${home}\n";
-        print SCRIPT "/homes/bjsco/local/bin/abyss-pe name=${project_name}-${k} k=${k} np=\$NSLOTS lib=\'pe1\' pe1=\'${base_dir}${read_1} ${base_dir}${read_2}\' se=\'${unpaired_reads_and_or_unitigs}\' -C ${outdir}";
-
-#        print SCRIPT "velveth ${project_name}_${k} ${k} -fastq -short ${home}/${project_name}_good_singletons.fastq -shortPaired -interleaved -fastq ${home}/${project_name}_good_shuff_pairs.fastq\n";
-#        print SCRIPT "velvetg ${project_name}_${k} -read_trkg yes\n";
-#        print SCRIPT "oases ${project_name}_${k}\n";
-        ######### estimates memory requirements and write qsubs for beocat ###
-#        my $mem=30;
-#        my $kmem=(-109635 + 18977*100 + 86326*400 + 233353*$count*2 - 51092*${k});
-#        $mem=(${kmem}/1000000);
-        `qsub -l h_rt=48:00:00,mem=${mem_per_core}G -pe single ${nodes} ./${script}`;
-#        print QSUBS_SINGLEK "qsub -l h_rt=100:00:00,mem=${mem}G ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh\n";
-#        Ram required for velvetg = -109635 + 18977*ReadSize + 86326*GenomeSize + 233353*NumReads - 51092*K
-
-    }
-    #######################################################################
-    #########   Assemble merged k-mer assemblies  k=${merge_k}   ##########
-    #######################################################################
-    open (QSUBS_MERGE, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_merge.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_merge.sh!\n";
-    print QSUBS_MERGE "#!/bin/bash\n";
     close (SCRIPT);
-    open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh!\n"; # create a shell script for each read-pair set
+    open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh!\n"; # create a shell script for each read-pair set
     print SCRIPT "#!/bin/bash\n";
-    print SCRIPT "#######################################################################\n#########         Assemble merged k-mer assemblies  k=${merge_k}     ##########\n#######################################################################\n";
+    print SCRIPT "#######################################################################\n#########         Assemble single k-mer assemblies  k=$k     ##########\n#######################################################################\n";
     print SCRIPT "set -o verbose\n";
-    print SCRIPT "PATH=/homes/sheltonj/abjc/velvet_1.2.08:/homes/sheltonj/abjc/oases_0.2.08:\${PATH}\n";
-    print SCRIPT "export PATH\n";
+    print SCRIPT "export PATH=\$(find /homes/bjsco/abyss-1.3.4 -type d | tr '\n' ':' | sed 's/:\$//'):\${PATH}\n"; # get all paths in the Abyss directory
     print SCRIPT "cd ${home}\n";
-    print SCRIPT "velveth mergedAssembly ${merge_k} -long ${project_name}_*/transcripts.fa\n";
-    print SCRIPT "velvetg mergedAssembly -read_trkg yes -conserveLong yes\n";
-    print SCRIPT "oases mergedAssembly -merge yes\n";
-    close (SCRIPT);
-    my $mem=30;
-    my $kmem=(-109635 + 18977*100 + 86326*400 + 233353*$count*2 - 51092*${merge_k});
-    $mem=(${kmem}/1000000);
-    print QSUBS_MERGE "qsub -l h_rt=100:00:00,mem=${mem}G ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh\n";
-    #######################################################################
-    #########           Cluster merged assembly with CDH         ##########
-    #######################################################################
-    open (CLUSTER_QC, '>', "${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh!\n";
-    print CLUSTER_QC "#!/bin/bash\n";
-    print CLUSTER_QC "set -o verbose\n";
-    print CLUSTER_QC "cd ${home}\n";
-#    print CLUSTER_QC '#######  non-redudant from http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0056217#s4 The transcripts from three individual assemblies were clustered (CD-HIT v4.5.4 http://www.bioinformatics.org/cd-hit/) [56] in order to generate a comprehensive reference. Sequence identity threshold and alignment coverage (for the shorter sequence) were both set as 80% to generate clusters. Such clustered transcripts were defined as reference transcripts in this work.###########';
-    print CLUSTER_QC "\n/homes/sheltonj/abjc/cd-hit-v4.6.1/cd-hit-est -i ${home}/mergedAssembly/transcripts.fa -o ${home}/mergedAssembly/CDH_clustermergedAssembly_${project_name}_${merge_k}.fa -c .80 -aS .80s\n";
-
-    #######################################################################
-    #########    QC assemblies and summarize cleaning steps      ##########
-    #######################################################################
-    print CLUSTER_QC "#######################################################################\n#########    QC assemblies and summarize cleaning steps      ##########\n#######################################################################\n";
-    print CLUSTER_QC "perl ~/read-cleaning-format-conversion/KSU_bioinfo_lab/pre_post_cleaning_metrics.pl ${home}/${project_name}_prinseq/*_paired.log\n";
-    print CLUSTER_QC "perl ~/genome-annotation-and-comparison/KSU_bioinfo_lab/assembly_quality_stats_for_multiple_assemblies.pl ${project_name}_*/transcripts.fa mergedAssembly/transcripts.fa mergedAssembly/CDH_clustermergedAssembly_${project_name}_${merge_k}.fa\n";
-    open (QSUBS_CLUSTER_QC, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_cluster_and_qc.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_cluster_and_qc.sh!\n";
-    print QSUBS_CLUSTER_QC "#!/bin/bash\n";
-    print QSUBS_CLUSTER_QC "qsub -l h_rt=300:00:00,mem=2G ${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh\n";
+    print SCRIPT "/homes/bjsco/local/bin/abyss-pe name=${project_name}-${k} k=${k} np=\$NSLOTS ${lib_code}${libx_code}${se_lib_code} -C ${home}/${project_name}/${project_name}_${k}\n";
+    print QSUBS_SINGLEK "qsub -l h_rt=48:00:00,mem=${mem_per_core}G -pe single ${nodes} ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh\n";
 }
-
+#######################################################################
+#########   Assemble merged k-mer assemblies  k=${merge_k}   ##########
+#######################################################################
+$se_lib_code = "se=\'$clean_read_singletons ${home}/${project_name}/${project_name}_*/${project_name}-*-unitigs.fa\'"; # write list of se libraries
+open (QSUBS_MERGE, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_merge.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_merge.sh!\n";
+print QSUBS_MERGE "#!/bin/bash\n";
+close (SCRIPT);
+open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh!\n"; # create a shell script for each read-pair set
+print SCRIPT "#!/bin/bash\n";
+print SCRIPT "#######################################################################\n#########         Assemble merged k-mer assemblies  k=${merge_k}     ##########\n#######################################################################\n";
+print SCRIPT "set -o verbose\n";
+print SCRIPT "export PATH=\$(find /homes/bjsco/abyss-1.3.4 -type d | tr '\n' ':' | sed 's/:\$//'):\${PATH}\n"; # get all paths in the Abyss directory
+print SCRIPT "cd ${home}\n";
+print SCRIPT "/homes/bjsco/local/bin/abyss-pe name=${project_name}-merge-${merge_k} k=${k} np=\$NSLOTS ${lib_code}${libx_code}${se_lib_code} -C ${home}/${project_name}/${project_name}_merge_${merge_k}\n";
+print QSUBS_MERGE "qsub -l h_rt=48:00:00,mem=${mem_per_core}G -pe single ${nodes} ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh\n"
+close (SCRIPT);
+#######################################################################
+#########    QC assemblies and summarize cleaning steps      ##########
+#######################################################################
+print CLUSTER_QC "#######################################################################\n#########    QC assemblies and summarize cleaning steps      ##########\n#######################################################################\n";
+print CLUSTER_QC "perl ~/read-cleaning-format-conversion/KSU_bioinfo_lab/pre_post_cleaning_metrics.pl ${home}/${project_name}_prinseq/*_paired.log\n";
+print CLUSTER_QC "perl ~/genome-annotation-and-comparison/KSU_bioinfo_lab/assembly_quality_stats_for_multiple_assemblies.pl ${home}/${project_name}/${project_name}_*/${project_name}-*-unitigs.fa mergedAssembly/CDH_clustermergedAssembly_${project_name}_${merge_k}.fa ${home}/${project_name}/${project_name}_merge_${merge_k}/${project_name}-merge-*-scaffolds.fa\n";
+open (QSUBS_CLUSTER_QC, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_qc.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_qc.sh!\n";
+print QSUBS_CLUSTER_QC "#!/bin/bash\n";
+print QSUBS_CLUSTER_QC "qsub -l h_rt=300:00:00,mem=2G ${home}/${project_name}_scripts/${project_name}_cluster_qc_assemblies.sh\n";
 print "done\n";
 ##################################################################################
 ##############                  Documentation                   ##################
@@ -283,13 +267,16 @@ Prints the more detailed manual page with output details and examples and exits.
 =item B<-r, --r_list>
  
 The filename of the user provided list of read files. The file should be tab separated. The first column should be the library type (either "pe" for paired end or "mp" for mate paired). Paired end or "pe" libraries are used to assemble sequence. Your library should be labeled "mp" if it is a long distance mate-pair library. "mp" libraries are not used for assembly, only for scaffolding. See https://github.com/bcgsc/abyss#assembling-multiple-libraries.
+
+Note: If you have multple insert lengths read files from each should be listed on separate lines so that Abyss can estimate insert length separately.
  
-The next column is the first read file, then the second read file. Example:
+The second column is the first read file, then the third column is the second read file. Example:
  
-pe sample_data/sample_1_R1.fastq   sample_data/sample_1_R2.fastq
+pe sample_data/sample_300bp_1_R1.fastq   sample_data/sample_300bp_1_R2.fastq
+pe sample_data/sample_500bp_1_R1.fastq   sample_data/sample_500bp_1_R2.fastq
 mp sample_data/sample_3_R1.fastq   sample_data/sample_3_R2.fastq
  
-If a sample has multiple fastq files for R1 and R2 separate these with commas. Example:
+If a library has multiple fastq files for R1 and R2 separate these with commas. Example:
 pe sample_data/sample_1a_R1.fastq,sample_data/sample_1b_R1.fastq,sample_data/sample_1c_R1.fastq   sample_data/sample_1a_R2.fastq,sample_data/sample_1b_R2.fastq,sample_data/sample_1c_R2.fastq
 pe sample_data/sample_2a_R1.fastq,sample_data/sample_2b_R1.fastq,sample_data/sample_2c_R1.fastq   sample_data/sample_2a_R2.fastq,sample_data/sample_2b_R2.fastq,sample_data/sample_2c_R2.fastq
 mp sample_data/sample_3a_R1.fastq,sample_data/sample_3b_R1.fastq,sample_data/sample_3c_R1.fastq   sample_data/sample_3a_R2.fastq,sample_data/sample_3b_R2.fastq,sample_data/sample_3c_R2.fastq
