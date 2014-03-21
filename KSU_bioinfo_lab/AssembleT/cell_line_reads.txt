@@ -1,0 +1,5 @@
+MB231   ~/RNA-Seq_sample/MB231_paired-end_RNA-seq_subsampled_1.fastq   ~/RNA-Seq_sample/MB231_paired-end_RNA-seq_subsampled_2.fastq
+MB468   ~/RNA-Seq_sample/MB468_paired-end_RNA-seq_subsampled_1.fastq   ~/RNA-Seq_sample/MB468_paired-end_RNA-seq_subsampled_2.fastq
+BT474   ~/RNA-Seq_sample/BT474_paired-end_RNA-seq_subsampled_1.fastq   ~/RNA-Seq_sample/BT474_paired-end_RNA-seq_subsampled_2.fastq
+BT20    ~/RNA-Seq_sample/BT20_paired-end_RNA-seq_subsampled_1.fastq    ~/RNA-Seq_sample/BT20_paired-end_RNA-seq_subsampled_2.fastq
+
