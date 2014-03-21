@@ -159,7 +159,7 @@ for my $samples (@reads)
     #######################################################################
     open (SCRIPT, '>>', "${home}/${project_name}_scripts/cat_reads.sh") or die "Can't open ${home}/${project_name}_scripts/cat_reads.sh!\n"; # create a shell script
     print SCRIPT "#!/bin/bash\n";
-    $lib_name= "${samples->[0]}${lib_count}";
+    $lib_name= "$samples->[0]${lib_count}";
     print SCRIPT "cat$clean_read_file1 > ${home}/${project_name}_${lib_name}_good_1.fastq # concatenate fasta\n";
     print SCRIPT "cat$clean_read_file2 > ${home}/${project_name}_${lib_name}_good_2.fastq # concatenate fasta\n";
     #######################################################################
