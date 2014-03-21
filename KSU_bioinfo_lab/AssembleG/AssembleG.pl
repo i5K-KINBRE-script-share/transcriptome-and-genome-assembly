@@ -170,7 +170,7 @@ for my $samples (@reads)
     $lib_code = "$lib_code"."${lib_name} ";
 }
 my $se_lib_code = "se=\'$clean_read_singletons\'"; # write list of se libraries
-$lib_code = "$lib_code"."\'"; # close list of library names
+$lib_code = "$lib_code"."\' "; # close list of library names
 #######################################################################
 #########         Assemble single k-mer assemblies           ##########
 #######################################################################
@@ -236,7 +236,7 @@ __END__
 
 =head1 SYNOPSIS
 
-AssembleG.pl - The script writes scripts and qsubs to assemble illumina paired end reads into a de novo transcriptome. The script 1) converts illumina headers if the "-c" parameter is used, 2) cleans and deduplicates raw reads using Prinseq http://prinseq.sourceforge.net/manual.html, 3) index the reference genome for mapping, 4) reads are the assembled multiple times with a range of values of k, 5) these assemblies are merged with Oases using a merge kmer value, 6) then the merged assembly is clusted with CDHit to take the longest of similar putative transcripts, 7) finally assembly metrics are generated for all assemblies and read length and number are summarized before and after cleaning.
+AssembleG.pl - The script writes scripts and qsubs to assemble illumina paired end reads into a de novo genome. The script 1) converts illumina headers if the "-c" parameter is used, 2) cleans and deduplicates raw reads using Prinseq http://prinseq.sourceforge.net/manual.html, 3) reads are the assembled multiple times with a range of values of k, 4) finally assembly metrics are generated for all assemblies and read length and number are summarized before and after cleaning.
 
 =head1 USAGE
 
@@ -316,7 +316,7 @@ If the illumina headers do not end in /1 or /2 use this parameter to indicat tha
 
 B<OUTPUT DETAILS:>
 
-see: https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/transcriptome_assembly_pipeline/transcriptome_assembly_LAB.md
+see: https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/AssembleG/AssembleG_LAB.md
 
 B<Test with sample datasets:>
  
@@ -345,20 +345,20 @@ perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/AssembleG/AssembleG.pl 
  
 bash ~/de_novo_genome/S_aureus_qsubs/S_aureus_qsubs_clean.sh
  
-# Concatenate cleaned reads and shuffle sequences for Oases
+# Concatenate cleaned reads
  
 bash ~/de_novo_genome/S_aureus_scripts/cat_reads.sh
  
 # Assemble single kmer transcriptomes. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
  
- bash ~/de_novo_genome/S_aureus_qsubs/S_aureus_qsubs_singlek.sh
+bash ~/de_novo_genome/S_aureus_qsubs/S_aureus_qsubs_singlek.sh
  
 # Merge single kmer transcriptomes. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
  
- bash ~/de_novo_genome/S_aureus_qsubs/S_aureus_qsubs_merge.sh
+bash ~/de_novo_genome/S_aureus_qsubs/S_aureus_qsubs_merge.sh
  
-# Cluster merged assembly with CDH. Putative transcripts that share 80% identity over 80% of the length are clustered and the longest transcript is printed in the clustered fasta file. This step will also generate assembly metrics and summarize the cleaning step results.
+# This step will generate assembly metrics and summarize the cleaning step results.
  
- bash ~/de_novo_genome/S_aureus_qsubs/S_aureus_qsubs_cluster_and_qc.sh
+bash ~/de_novo_genome/S_aureus_qsubs/S_aureus_qsubs_qc.sh
 
 =cut
