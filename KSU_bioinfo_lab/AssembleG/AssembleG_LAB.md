@@ -46,7 +46,7 @@ Your output will look similar to the output below for the sample data. Because t
         
 Call "AssembleG.pl". Our reads are only ~50 bp long so we are setting our minimum read length to 35 bp. Generally you want to keep this length ~10 bp shorter than our read length. We would also raise the longest kmer value "-l" to ~61 if our reads were 100bp.
 
-        perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/AssembleG/AssembleG.pl -r S_aureus_reads_assembly.txt -p S_aureus -s 25 -l 39 -i 2 -n 35 -m 33
+        perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/AssembleG/AssembleG.pl -r ~/de_novo_genome/S_aureus_reads.txt -p S_aureus -n 35 --nodes 8 --mem_per_core 3 -s 21 -l 45 -i 2 -m 31
 
 ###Step 4: Run prinseq and the assembly scripts
 

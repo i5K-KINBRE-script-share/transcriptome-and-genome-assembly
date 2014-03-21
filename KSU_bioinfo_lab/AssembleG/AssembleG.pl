@@ -159,7 +159,7 @@ for my $samples (@reads)
     #######################################################################
     open (SCRIPT, '>>', "${home}/${project_name}_scripts/cat_reads.sh") or die "Can't open ${home}/${project_name}_scripts/cat_reads.sh!\n"; # create a shell script
     print SCRIPT "#!/bin/bash\n";
-    $lib_name= "${lib_name}${lib_count}";
+    $lib_name= "${samples->[0]}${lib_count}";
     print SCRIPT "cat$clean_read_file1 > ${home}/${project_name}_${lib_name}_good_1.fastq # concatenate fasta\n";
     print SCRIPT "cat$clean_read_file2 > ${home}/${project_name}_${lib_name}_good_2.fastq # concatenate fasta\n";
     #######################################################################
@@ -339,7 +339,7 @@ ln -s /homes/bioinfo/RNA-Seq_sample/* ~/de_novo_genome/
  
 # Write assembly scripts
 
-perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/transcriptome_assembly_pipeline/AssembleG.pl -r S_aureus_reads_assembly.txt -p S_aureus -s 25 -l 39 -i 2 -n 35 -m 33
+perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/AssembleG/AssembleG.pl -r ~/de_novo_genome/S_aureus_reads.txt -p S_aureus -n 35 --nodes 8 --mem_per_core 3 -s 21 -l 45 -i 2 -m 31
  
 # Clean raw reads. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
  
