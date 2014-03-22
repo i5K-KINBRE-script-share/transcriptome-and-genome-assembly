@@ -229,6 +229,7 @@ open (QC, '>', "${home}/${project_name}_scripts/${project_name}_qc_assemblies.sh
 print QC "#!/bin/bash\n";
 print QC "set -o verbose\n";
 print QC "cd ${home}\n";
+print QC "mkdir ${project_name}_merge_${merge_k}\n";
 print QC "#######################################################################\n#########    QC assemblies and summarize cleaning steps      ##########\n#######################################################################\n";
 print QC "perl ~/read-cleaning-format-conversion/KSU_bioinfo_lab/pre_post_cleaning_metrics.pl ${home}/${project_name}_prinseq/*_paired.log\n";
 print QC "perl ~/genome-annotation-and-comparison/KSU_bioinfo_lab/assembly_quality_stats_for_multiple_assemblies.pl ${home}/${project_name}/${project_name}_*/${project_name}-*-unitigs.fa mergedAssembly/CDH_clustermergedAssembly_${project_name}_${merge_k}.fa ${home}/${project_name}/${project_name}_merge_${merge_k}/${project_name}-merge-*-scaffolds.fa\n";
