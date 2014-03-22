@@ -31,7 +31,7 @@ print "########################################################################\
 ###############################################################################
 ##############                get arguments                  ##################
 ###############################################################################
-my ($r_list,$clean_read_file1,$clean_read_file2,$clean_read_singletons,$lib_name);
+my ($r_list,$clean_read_file1,$clean_read_file2,$clean_read_singletons,$lib_name,$new_nodes);
 my $project_name = "my_project";
 my $convert_header = 0;
 my $shortest_k = 21; # must be odd
@@ -81,6 +81,11 @@ while (<READ_LIST>)
     push @reads , [split];
 }
 ###############################################################################
+##############                Open QSUB scripts                   #############
+###############################################################################
+open (QSUBS_CLEAN, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_clean.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_clean.sh!\n";
+print QSUBS_CLEAN "#!/bin/bash\n";
+###############################################################################
 ##############     Write scripts for each sample             ##################
 ###############################################################################
 for my $samples (@reads)
@@ -108,8 +113,6 @@ for my $samples (@reads)
     #######################################################################
     ############ Convert headers of illumina paired-end data ##############
     #######################################################################
-    open (QSUBS_CLEAN, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_clean.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_clean.sh!\n";
-    print QSUBS_CLEAN "#!/bin/bash\n";
     for my $file (0..$#r1)
     {
         #######################################################################
@@ -181,9 +184,9 @@ print QSUBS_SINGLEK "#!/bin/bash\n";
 #######################################################################
 for ( my $k = $shortest_k; $k <= $longest_k; $k += $increment_k )
 {
-    if ($k > $longest_k/2)
+    if ($shortest_k + $k > $longest_k - $shortest_k/2)
     {
-        $nodes = $nodes/2; # Shorter kmers require a higher value for ${nodes}. ${nodes}=64 worked for a 200Mb genome when k = 21 to 59. ${nodes}=32 worked for the same genome when k = 61 to 91.Therefore, we divide $nodes by 2 for the longest kmer values.
+        $new_nodes = $nodes/2; # Shorter kmers require a higher value for ${nodes}. ${nodes}=64 worked for a 200Mb genome when k = 21 to 59. ${nodes}=32 worked for the same genome when k = 61 to 91.Therefore, we divide $nodes by 2 for the longest kmer values.
     }
     #######################################################################
     #########       Adjust number of nodes for longer kmers      ##########
@@ -195,8 +198,9 @@ for ( my $k = $shortest_k; $k <= $longest_k; $k += $increment_k )
     print SCRIPT "set -o verbose\n";
     print SCRIPT "export PATH=\$(find /homes/bjsco/abyss-1.3.4 -type d | tr '\n' ':' | sed 's/:\$//'):\${PATH}\n"; # get all paths in the Abyss directory
     print SCRIPT "cd ${home}\n";
+    print SCRIPT "mkdir ${project_name}_${k}\n";
     print SCRIPT "/homes/bjsco/local/bin/abyss-pe name=${project_name}-${k} k=${k} np=\$NSLOTS ${lib_code}${libx_code}${se_lib_code} -C ${home}/${project_name}/${project_name}_${k}\n";
-    print QSUBS_SINGLEK "qsub -l h_rt=48:00:00,mem=${mem_per_core}G -pe single ${nodes} ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh\n";
+    print QSUBS_SINGLEK "qsub -l h_rt=48:00:00,mem=${mem_per_core}G -pe single ${new_nodes} ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh\n";
 }
 #######################################################################
 #########   Assemble merged k-mer assemblies  k=${merge_k}   ##########
@@ -212,7 +216,7 @@ print SCRIPT "set -o verbose\n";
 print SCRIPT "export PATH=\$(find /homes/bjsco/abyss-1.3.4 -type d | tr '\n' ':' | sed 's/:\$//'):\${PATH}\n"; # get all paths in the Abyss directory
 print SCRIPT "cd ${home}\n";
 print SCRIPT "/homes/bjsco/local/bin/abyss-pe name=${project_name}-merge-${merge_k} k=${merge_k} np=\$NSLOTS ${lib_code}${libx_code}${se_lib_code} -C ${home}/${project_name}/${project_name}_merge_${merge_k}\n";
-print QSUBS_MERGE "qsub -l h_rt=48:00:00,mem=${mem_per_core}G -pe single ${nodes} ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh\n";
+print QSUBS_MERGE "qsub -l h_rt=48:00:00,mem=${mem_per_core}G -pe single ${new_nodes} ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh\n";
 close (SCRIPT);
 #######################################################################
 #########    QC assemblies and summarize cleaning steps      ##########
