@@ -215,6 +215,7 @@ print QSUBS_MERGE "#!/bin/bash\n";
 close (SCRIPT);
 open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh!\n"; # create a shell script for each read-pair set
 print SCRIPT "#!/bin/bash\n";
+print SCRIPT "mkdir ${project_name}_merge_${merge_k}\n";
 print SCRIPT "#######################################################################\n#########         Assemble merged k-mer assemblies  k=${merge_k}     ##########\n#######################################################################\n";
 print SCRIPT "set -o verbose\n";
 print SCRIPT "export PATH=\$(find /homes/bjsco/abyss-1.3.4 -type d | tr '\n' ':' | sed 's/:\$//'):\${PATH}\n"; # get all paths in the Abyss directory
@@ -229,7 +230,6 @@ open (QC, '>', "${home}/${project_name}_scripts/${project_name}_qc_assemblies.sh
 print QC "#!/bin/bash\n";
 print QC "set -o verbose\n";
 print QC "cd ${home}\n";
-print QC "mkdir ${project_name}_merge_${merge_k}\n";
 print QC "#######################################################################\n#########    QC assemblies and summarize cleaning steps      ##########\n#######################################################################\n";
 print QC "perl ~/read-cleaning-format-conversion/KSU_bioinfo_lab/pre_post_cleaning_metrics.pl ${home}/${project_name}_prinseq/*_paired.log\n";
 print QC "perl ~/genome-annotation-and-comparison/KSU_bioinfo_lab/assembly_quality_stats_for_multiple_assemblies.pl ${home}/${project_name}_*/${project_name}-*-unitigs.fa ${home}/${project_name}_merge_${merge_k}/${project_name}-merge-*-scaffolds.fa\n";
