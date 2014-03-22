@@ -1,42 +1,39 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="NgsPipelinesOnBeocat : Pipelines to assemble de novo transcriptomes and genomes and test for differential expression" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>NgsPipelinesOnBeocat by i5K-KINBRE-script-share</title>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>NgsPipelinesOnBeocat</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
   </head>
-
   <body>
+    <div class="wrapper">
+      <header>
+        <h1>NgsPipelinesOnBeocat</h1>
+        <p>Pipelines to assemble de novo transcriptomes and genomes and test for differential expression</p>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly">View on GitHub</a>
+        <p class="view"><a href="https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly">View the Project on GitHub <small>i5K-KINBRE-script-share/transcriptome-and-genome-assembly</small></a></p>
 
-          <h1 id="project_title">NgsPipelinesOnBeocat</h1>
-          <h2 id="project_tagline">Pipelines to assemble de novo transcriptomes and genomes and test for differential expression</h2>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
+        <ul>
+          <li><a href="https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
         <p><img src="https://raw.githubusercontent.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/master/images/ngs_pipelines_on_beocat.png" alt="Alt text"></p>
 
 <h3>
 <a name="about" class="anchor" href="#about"><span class="octicon octicon-link"></span></a>About</h3>
 
-<p>The K-INBRE Bioinformatics Core has created easy to use pipelines for using paired end Illumina reads for several common NGS experiments.</p>
+<hr><p>The K-INBRE Bioinformatics Core has created easy to use pipelines for using paired end Illumina reads for several common NGS experiments.</p>
 
 <p>All pipelines have sample datasets and tutorials. All pipelines take you from raw data received from your sequencing facility to finished analysis using Beocat <a href="https://www.cis.ksu.edu/beocat">https://www.cis.ksu.edu/beocat</a> (the largest compute cluster in Kansas which is free to all researchers in the K-INBRE network).</p>
 
@@ -49,51 +46,65 @@
 <h3>
 <a name="genome-assembly" class="anchor" href="#genome-assembly"><span class="octicon octicon-link"></span></a>Genome assembly</h3>
 
-<p>Go to: <a href="https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/AssembleG/AssembleG_LAB.md">https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/AssembleG/AssembleG_LAB.md</a></p>
+<hr><h3>
+<a name="go-to" class="anchor" href="#go-to"><span class="octicon octicon-link"></span></a>Go to:</h3>
+
+<p><a href="https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/AssembleG/AssembleG_LAB.md">https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/AssembleG/AssembleG_LAB.md</a></p>
 
 <p>The script "AssembleG.pl" to organizes your working directory and writes scripts to clean your reads, assembles your data or the de novo genome for Staphylococcus aureus from the sample data, and summarize your assembly metrics.</p>
 
-<p>To begin this lab your should read about the software we will be using. Prinseq will be used to clean raw reads. Priseq cleaning is highly customizable. You can see a detailed parameter list by typing "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -h" or by visiting their manual at <a href="http://prinseq.sourceforge.net/manual.html">http://prinseq.sourceforge.net/manual.html</a>. You can read a detailed list of parameter options for Abyss genome assembler by typing "/homes/bjsco/local/bin/abyss-pe -h" or visit the Abyss manual at <a href="https://github.com/bcgsc/abyss#abyss">https://github.com/bcgsc/abyss#abyss</a>.</p>
+<p>To begin this lab your should read about the software we will be using. Prinseq will be used to clean raw reads. Priseq cleaning is highly customizable. You can see a detailed parameter list by typing <code>perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -h</code> or by visiting their manual at <a href="http://prinseq.sourceforge.net/manual.html">http://prinseq.sourceforge.net/manual.html</a>. You can read a detailed list of parameter options for Abyss genome assembler by typing <code>/homes/bjsco/local/bin/abyss-pe -h</code> or visit the Abyss manual at <a href="https://github.com/bcgsc/abyss#abyss">https://github.com/bcgsc/abyss#abyss</a>.</p>
 
-<p>To find out more about the parameters for "AssembleG.pl" run "perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/AssembleG/AssembleG.pl -man" or visit its manual at <a href="https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/tree/master/KSU_bioinfo_lab/AssembleG/AssembleG_README.md">https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/tree/master/KSU_bioinfo_lab/AssembleG/AssembleG_README.md</a>.</p>
+<p>To find out more about the parameters for "AssembleG.pl" run <code>perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/AssembleG/AssembleG.pl -man</code> or visit its manual at <a href="https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/tree/master/KSU_bioinfo_lab/AssembleG/AssembleG_README.md">https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/tree/master/KSU_bioinfo_lab/AssembleG/AssembleG_README.md</a>.</p>
 
 <h3>
 <a name="transcriptome-assembly" class="anchor" href="#transcriptome-assembly"><span class="octicon octicon-link"></span></a>Transcriptome assembly</h3>
 
-<p>Go to: <a href="https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/AssembleT/AssembleT_LAB.md">https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/AssembleT/AssembleT_LAB.md</a></p>
+<hr><h3>
+<a name="go-to-1" class="anchor" href="#go-to-1"><span class="octicon octicon-link"></span></a>Go to:</h3>
+
+<p><a href="https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/AssembleT/AssembleT_LAB.md">https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/AssembleT/AssembleT_LAB.md</a></p>
 
 <p>The script "AssembleT.pl" organizes your working directory and writes scripts to clean your reads, assemble your de novo transcriptome for your data or the human breast cancer cell lines from the sample data, and summarize your assembly metrics.</p>
 
-<p>To you should read about the software we will be using. Prinseq will be used to clean raw reads. Priseq cleaning is highly customizable. You can see a detailed parameter list by typing "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -h" or by visiting their manual at <a href="http://prinseq.sourceforge.net/manual.html">http://prinseq.sourceforge.net/manual.html</a>. You can read a detailed list of parameter options for Oases transcriptome assembler by typing "/homes/sheltonj/abjc/oases_0.2.08/oases" or visit the Oases manual at <a href="https://www.ebi.ac.uk/%7Ezerbino/oases/">https://www.ebi.ac.uk/~zerbino/oases/</a>.</p>
+<p>To you should read about the software we will be using. Prinseq will be used to clean raw reads. Priseq cleaning is highly customizable. You can see a detailed parameter list by typing <code>perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -h</code> or by visiting their manual at <a href="http://prinseq.sourceforge.net/manual.html">http://prinseq.sourceforge.net/manual.html</a>. You can read a detailed list of parameter options for Oases transcriptome assembler by typing <code>/homes/sheltonj/abjc/oases_0.2.08/oases</code> or visit the Oases manual at <a href="https://www.ebi.ac.uk/%7Ezerbino/oases/">https://www.ebi.ac.uk/~zerbino/oases/</a>.</p>
 
-<p>To find out more about the parameters for "AssembleT.pl" type "perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/AssembleT/AssembleT.pl -man" or visit its manual at <a href="https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/tree/master/KSU_bioinfo_lab/AssembleT/AssembleT_README.md">https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/tree/master/KSU_bioinfo_lab/AssembleT/AssembleT_README.md</a>.</p>
+<p>To find out more about the parameters for "AssembleT.pl" type <code>perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/AssembleT/AssembleT.pl -man</code> or visit its manual at <a href="https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/tree/master/KSU_bioinfo_lab/AssembleT/AssembleT_README.md">https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/tree/master/KSU_bioinfo_lab/AssembleT/AssembleT_README.md</a>.</p>
 
 <h3>
-<a name="rna_seq-reference-based-differential-expression" class="anchor" href="#rna_seq-reference-based-differential-expression"><span class="octicon octicon-link"></span></a>RNA_Seq reference based differential expression</h3>
+<a name="rna-seq-reference-based-differential-expression" class="anchor" href="#rna-seq-reference-based-differential-expression"><span class="octicon octicon-link"></span></a>RNA-Seq reference based differential expression</h3>
 
-<p>Go to: <a href="https://github.com/i5K-KINBRE-script-share/RNA-Seq-annotation-and-comparison/blob/master/KSU_bioinfo_lab/RNA-SeqAlign2RefREADME.md">https://github.com/i5K-KINBRE-script-share/RNA-Seq-annotation-and-comparison/blob/master/KSU_bioinfo_lab/RNA-SeqAlign2RefREADME.md</a></p>
+<hr><h3>
+<a name="go-to-2" class="anchor" href="#go-to-2"><span class="octicon octicon-link"></span></a>Go to:</h3>
 
-<p>The script writes scripts and qsubs to generate count summaries for Illumina paired end reads after mapping against a reference genome. The script 1) converts illumina headers if the "-c" parameter is used, 2) cleans raw reads using Prinseq <a href="http://prinseq.sourceforge.net/manual.html">http://prinseq.sourceforge.net/manual.html</a>, 3) indexes the reference genome for mapping, 4) reads are aligned to the genome with Tophat2 (read more about Tophat2 at <a href="http://tophat.cbcb.umd.edu/manual.html">http://tophat.cbcb.umd.edu/manual.html</a>) and expressed genes and transcripts are assembled with Cufflinks2, 5) these assemblies are merged with Cuffmerge and differential expression is estimated with Cuffdiff2.</p>
+<p><a href="https://github.com/i5K-KINBRE-script-share/RNA-Seq-annotation-and-comparison/blob/master/KSU_bioinfo_lab/RNA-SeqAlign2RefREADME.md">https://github.com/i5K-KINBRE-script-share/RNA-Seq-annotation-and-comparison/blob/master/KSU_bioinfo_lab/RNA-SeqAlign2RefREADME.md</a></p>
 
-<p>To begin you should read about the software we will be using. Prinseq will be used to clean raw reads. Priseq cleaning is highly customizable. You can see a detailed parameter list by typing "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -h" or by visiting their manual at <a href="http://prinseq.sourceforge.net/manual.html">http://prinseq.sourceforge.net/manual.html</a>. You can read a detailed list of parameter options for Tophat2 by typing "/homes/bjsco/bin/tophat2 -h" or visit the Tophat manual at <a href="http://tophat.cbcb.umd.edu/manual.html">http://tophat.cbcb.umd.edu/manual.html</a>. Cufflink parameters are listed by running "/homes/bjsco/bin/cufflinks". Cuffdiff2 parameters are listed by running "/homes/bjsco/bin/cuffdiff". If you use the software for research you should read the article describing the Cuffdiff2 algorithm and performance <a href="http://bioinformaticsk-state.blogspot.com/2013/04/cuffdiff-2-and-isoform-abundance.html">http://bioinformaticsk-state.blogspot.com/2013/04/cuffdiff-2-and-isoform-abundance.html</a>.</p>
+<p>The script writes scripts and qsubs to generate count summaries for Illumina paired end reads after mapping against a reference genome. The script 1) converts illumina headers if the <code>-c</code> parameter is used, 2) cleans raw reads using Prinseq <a href="http://prinseq.sourceforge.net/manual.html">http://prinseq.sourceforge.net/manual.html</a>, 3) indexes the reference genome for mapping, 4) reads are aligned to the genome with Tophat2 (read more about Tophat2 at <a href="http://tophat.cbcb.umd.edu/manual.html">http://tophat.cbcb.umd.edu/manual.html</a>) and expressed genes and transcripts are assembled with Cufflinks2, 5) these assemblies are merged with Cuffmerge and differential expression is estimated with Cuffdiff2.</p>
+
+<p>To begin you should read about the software we will be using. Prinseq will be used to clean raw reads. Priseq cleaning is highly customizable. You can see a detailed parameter list by typing <code>perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -h</code> or by visiting their manual at <a href="http://prinseq.sourceforge.net/manual.html">http://prinseq.sourceforge.net/manual.html</a>. You can read a detailed list of parameter options for Tophat2 by typing <code>/homes/bjsco/bin/tophat2 -h</code> or visit the Tophat manual at <a href="http://tophat.cbcb.umd.edu/manual.html">http://tophat.cbcb.umd.edu/manual.html</a>. Cufflink parameters are listed by running <code>/homes/bjsco/bin/cufflinks</code>. Cuffdiff2 parameters are listed by running <code>/homes/bjsco/bin/cuffdiff</code>. If you use the software for research you should read the article describing the Cuffdiff2 algorithm and performance <a href="http://bioinformaticsk-state.blogspot.com/2013/04/cuffdiff-2-and-isoform-abundance.html">http://bioinformaticsk-state.blogspot.com/2013/04/cuffdiff-2-and-isoform-abundance.html</a>.</p>
 
 <p>You will be using the script "RNA-SeqAlign2Ref.pl" to organize your working directory and write scripts to index your reference genome (hg19), clean out reads, map your cleaned reads using Tophat2,</p>
 
-<p>To find out more about the parameters for "RNA-SeqAlign2Ref.pl" run "perl ~/RNA-Seq-annotation-and-comparison/KSU_bioinfo_lab/RNA-SeqAlign2Ref.pl -man" or visit its manual at <a href="https://github.com/i5K-KINBRE-script-share/RNA-Seq-annotation-and-comparison/tree/master/KSU_bioinfo_lab">https://github.com/i5K-KINBRE-script-share/RNA-Seq-annotation-and-comparison/tree/master/KSU_bioinfo_lab</a></p>
+<p>To find out more about the parameters for "RNA-SeqAlign2Ref.pl" run <code>perl ~/RNA-Seq-annotation-and-comparison/KSU_bioinfo_lab/RNA-SeqAlign2Ref.pl -man</code> or visit its manual at <a href="https://github.com/i5K-KINBRE-script-share/RNA-Seq-annotation-and-comparison/tree/master/KSU_bioinfo_lab">https://github.com/i5K-KINBRE-script-share/RNA-Seq-annotation-and-comparison/tree/master/KSU_bioinfo_lab</a></p>
 
 <p>image by Krzysztof Szkurlatowski; 12frames.eu</p>
       </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">NgsPipelinesOnBeocat maintained by <a href="https://github.com/i5K-KINBRE-script-share">i5K-KINBRE-script-share</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/i5K-KINBRE-script-share">i5K-KINBRE-script-share</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
       </footer>
     </div>
-
-    
+    <script src="javascripts/scale.fix.js"></script>
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-49227836-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
 
   </body>
 </html>
