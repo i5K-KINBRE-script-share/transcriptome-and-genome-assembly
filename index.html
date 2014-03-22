@@ -68,6 +68,19 @@
 
 <p>To find out more about the parameters for "AssembleT.pl" type "perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/AssembleT/AssembleT.pl -man" or visit its manual at <a href="https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/tree/master/KSU_bioinfo_lab/AssembleT/AssembleT_README.md">https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/tree/master/KSU_bioinfo_lab/AssembleT/AssembleT_README.md</a>.</p>
 
+<h3>
+<a name="rna_seq-reference-based-differential-expression" class="anchor" href="#rna_seq-reference-based-differential-expression"><span class="octicon octicon-link"></span></a>RNA_Seq reference based differential expression</h3>
+
+<p>Go to: <a href="https://github.com/i5K-KINBRE-script-share/RNA-Seq-annotation-and-comparison/blob/master/KSU_bioinfo_lab/RNA-SeqAlign2RefREADME.md">https://github.com/i5K-KINBRE-script-share/RNA-Seq-annotation-and-comparison/blob/master/KSU_bioinfo_lab/RNA-SeqAlign2RefREADME.md</a></p>
+
+<p>The script writes scripts and qsubs to generate count summaries for Illumina paired end reads after mapping against a reference genome. The script 1) converts illumina headers if the "-c" parameter is used, 2) cleans raw reads using Prinseq <a href="http://prinseq.sourceforge.net/manual.html">http://prinseq.sourceforge.net/manual.html</a>, 3) indexes the reference genome for mapping, 4) reads are aligned to the genome with Tophat2 (read more about Tophat2 at <a href="http://tophat.cbcb.umd.edu/manual.html">http://tophat.cbcb.umd.edu/manual.html</a>) and expressed genes and transcripts are assembled with Cufflinks2, 5) these assemblies are merged with Cuffmerge and differential expression is estimated with Cuffdiff2.</p>
+
+<p>To begin you should read about the software we will be using. Prinseq will be used to clean raw reads. Priseq cleaning is highly customizable. You can see a detailed parameter list by typing "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -h" or by visiting their manual at <a href="http://prinseq.sourceforge.net/manual.html">http://prinseq.sourceforge.net/manual.html</a>. You can read a detailed list of parameter options for Tophat2 by typing "/homes/bjsco/bin/tophat2 -h" or visit the Tophat manual at <a href="http://tophat.cbcb.umd.edu/manual.html">http://tophat.cbcb.umd.edu/manual.html</a>. Cufflink parameters are listed by running "/homes/bjsco/bin/cufflinks". Cuffdiff2 parameters are listed by running "/homes/bjsco/bin/cuffdiff". If you use the software for research you should read the article describing the Cuffdiff2 algorithm and performance <a href="http://bioinformaticsk-state.blogspot.com/2013/04/cuffdiff-2-and-isoform-abundance.html">http://bioinformaticsk-state.blogspot.com/2013/04/cuffdiff-2-and-isoform-abundance.html</a>.</p>
+
+<p>You will be using the script "RNA-SeqAlign2Ref.pl" to organize your working directory and write scripts to index your reference genome (hg19), clean out reads, map your cleaned reads using Tophat2,</p>
+
+<p>To find out more about the parameters for "RNA-SeqAlign2Ref.pl" run "perl ~/RNA-Seq-annotation-and-comparison/KSU_bioinfo_lab/RNA-SeqAlign2Ref.pl -man" or visit its manual at <a href="https://github.com/i5K-KINBRE-script-share/RNA-Seq-annotation-and-comparison/tree/master/KSU_bioinfo_lab">https://github.com/i5K-KINBRE-script-share/RNA-Seq-annotation-and-comparison/tree/master/KSU_bioinfo_lab</a></p>
+
 <p>image by Krzysztof Szkurlatowski; 12frames.eu</p>
       </section>
     </div>
