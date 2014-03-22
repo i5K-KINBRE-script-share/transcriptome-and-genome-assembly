@@ -209,7 +209,7 @@ for ( my $k = $shortest_k; $k <= $longest_k; $k += $increment_k )
 #######################################################################
 #########   Assemble merged k-mer assemblies  k=${merge_k}   ##########
 #######################################################################
-$se_lib_code = "se=\'$clean_read_singletons ${home}/${project_name}/${project_name}_*/${project_name}-*-unitigs.fa\'"; # write list of se libraries
+$se_lib_code = "se=\'$clean_read_singletons ${home}/${project_name}_*/${project_name}-*-unitigs.fa\'"; # write list of se libraries
 open (QSUBS_MERGE, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_merge.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_merge.sh!\n";
 print QSUBS_MERGE "#!/bin/bash\n";
 close (SCRIPT);
