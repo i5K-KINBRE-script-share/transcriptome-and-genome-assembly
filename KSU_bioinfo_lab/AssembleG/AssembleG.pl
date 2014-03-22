@@ -188,6 +188,10 @@ for ( my $k = $shortest_k; $k <= $longest_k; $k += $increment_k )
     {
         $new_nodes = $nodes/2; # Shorter kmers require a higher value for ${nodes}. ${nodes}=64 worked for a 200Mb genome when k = 21 to 59. ${nodes}=32 worked for the same genome when k = 61 to 91.Therefore, we divide $nodes by 2 for the longest kmer values.
     }
+    else
+    {
+        $new_nodes = $nodes;
+    }
     #######################################################################
     #########       Adjust number of nodes for longer kmers      ##########
     #######################################################################
