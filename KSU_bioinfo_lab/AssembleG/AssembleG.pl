@@ -232,7 +232,7 @@ print QC "set -o verbose\n";
 print QC "cd ${home}\n";
 print QC "#######################################################################\n#########    QC assemblies and summarize cleaning steps      ##########\n#######################################################################\n";
 print QC "perl ~/read-cleaning-format-conversion/KSU_bioinfo_lab/pre_post_cleaning_metrics.pl ${home}/${project_name}_prinseq/*_paired.log\n";
-print QC "perl ~/genome-annotation-and-comparison/KSU_bioinfo_lab/assembly_quality_stats_for_multiple_assemblies.pl ${home}/${project_name}_*/${project_name}-*-unitigs.fa ${home}/${project_name}_merge_${merge_k}/${project_name}-merge-*-scaffolds.fa\n";
+print QC "perl ~/genome-annotation-and-comparison/KSU_bioinfo_lab/assembly_quality_stats_for_multiple_assemblies.pl ${home}/${project_name}_*/${project_name}-*-scaffolds.fa ${home}/${project_name}_merge_${merge_k}/${project_name}-merge-*-scaffolds.fa\n";
 open (QSUBS_QC, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_qc.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_qc.sh!\n";
 print QSUBS_QC "#!/bin/bash\n";
 print QSUBS_QC "qsub -l h_rt=300:00:00,mem=2G ${home}/${project_name}_scripts/${project_name}_qc_assemblies.sh\n";
