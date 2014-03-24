@@ -267,10 +267,12 @@ Prints the more detailed manual page with output details and examples and exits.
 =item B<-r, --r_list>
  
 The filename of the user provided list of read files. The file should be tab separated with the first read file, then the second read file. Example:
-sample_data/sample_1_R1.fastq   sample_data/sample_1_R2.fastq
+ 
+ sample_data/sample_1_R1.fastq   sample_data/sample_1_R2.fastq
  
 If a sample has multiple fastq files for R1 and R2 separate these with commas. Example:
-sample_data/sample_1a_R1.fastq,sample_data/sample_1b_R1.fastq,sample_data/sample_1c_R1.fastq   sample_data/sample_1a_R2.fastq,sample_data/sample_1b_R2.fastq,sample_data/sample_1c_R2.fastq
+ 
+ sample_data/sample_1a_R1.fastq,sample_data/sample_1b_R1.fastq,sample_data/sample_1c_R1.fastq   sample_data/sample_1a_R2.fastq,sample_data/sample_1b_R2.fastq,sample_data/sample_1c_R2.fastq
  
 =item B<-s, --shortest_k>
  
