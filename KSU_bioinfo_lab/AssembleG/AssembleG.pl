@@ -285,14 +285,15 @@ Note: If you have multple insert lengths read files from each should be listed o
  
 The second column is the first read file, then the third column is the second read file. Example:
  
-pe sample_data/sample_300bp_1_R1.fastq   sample_data/sample_300bp_1_R2.fastq
-pe sample_data/sample_500bp_1_R1.fastq   sample_data/sample_500bp_1_R2.fastq
-mp sample_data/sample_3_R1.fastq   sample_data/sample_3_R2.fastq
+ pe sample_data/sample_300bp_1_R1.fastq   sample_data/sample_300bp_1_R2.fastq
+ pe sample_data/sample_500bp_1_R1.fastq   sample_data/sample_500bp_1_R2.fastq
+ mp sample_data/sample_3_R1.fastq   sample_data/sample_3_R2.fastq
  
 If a library has multiple fastq files for R1 and R2 separate these with commas. Example:
-pe sample_data/sample_1a_R1.fastq,sample_data/sample_1b_R1.fastq,sample_data/sample_1c_R1.fastq   sample_data/sample_1a_R2.fastq,sample_data/sample_1b_R2.fastq,sample_data/sample_1c_R2.fastq
-pe sample_data/sample_2a_R1.fastq,sample_data/sample_2b_R1.fastq,sample_data/sample_2c_R1.fastq   sample_data/sample_2a_R2.fastq,sample_data/sample_2b_R2.fastq,sample_data/sample_2c_R2.fastq
-mp sample_data/sample_3a_R1.fastq,sample_data/sample_3b_R1.fastq,sample_data/sample_3c_R1.fastq   sample_data/sample_3a_R2.fastq,sample_data/sample_3b_R2.fastq,sample_data/sample_3c_R2.fastq
+ 
+ pe sample_1a_R1.fastq,sample_1b_R1.fastq,sample_1c_R1.fastq   sample_1a_R2.fastq,sample_1b_R2.fastq,sample_1c_R2.fastq
+ pe sample_2a_R1.fastq,sample_2b_R1.fastq,sample_2c_R1.fastq   sample_2a_R2.fastq,sample_2b_R2.fastq,sample_2c_R2.fastq
+ mp sample_3a_R1.fastq,sample_3b_R1.fastq,sample_3c_R1.fastq   sample_3a_R2.fastq,sample_3b_R2.fastq,sample_3c_R2.fastq
  
 =item B<-s, --shortest_k>
  
