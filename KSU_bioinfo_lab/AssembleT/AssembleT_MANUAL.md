@@ -1,5 +1,6 @@
 SYNOPSIS
-       AssembleT.pl - The script writes scripts and qsubs to assemble illumina
+
+AssembleT.pl - The script writes scripts and qsubs to assemble illumina
        paired end reads into a de novo transcriptome. The script 1) converts
        illumina headers if the "-c" parameter is used, 2) cleans and
        deduplicates raw reads using Prinseq
@@ -12,6 +13,7 @@ SYNOPSIS
        summarized before and after cleaning.
 
 USAGE
+
        perl AssembleT.pl [options]
 
         Documentation options:
@@ -29,6 +31,7 @@ USAGE
           -c        convert fastq headers
 
 OPTIONS
+
        -help   Print a brief help message and exits.
 
        -man    Prints the more detailed manual page with output details and
@@ -75,12 +78,17 @@ OPTIONS
                http://en.wikipedia.org/wiki/Fastq#Illumina_sequence_identifiers.
 
 DESCRIPTION
-       OUTPUT DETAILS:
 
-       see:
-       https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/AssembleT/AssembleT_LAB.md
 
-       Test with sample datasets:
+OUTPUT DETAILS:
 
-       # Find a more detailed instructions at
-       https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/AssembleT/AssembleT_LAB.md
+See:
+
+https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/AssembleT/AssembleT_LAB.md
+
+
+Test with sample datasets:
+
+See:
+
+https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/AssembleT/AssembleT_LAB.md
