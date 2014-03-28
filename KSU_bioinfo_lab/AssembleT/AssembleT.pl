@@ -324,7 +324,7 @@ cd de_novo_transcriptome
 
 # Create symbolic links to subsampled raw RNA reads from the human breast cancer cell lines.
  
-ln -s /homes/bioinfo/RNA-Seq_sample/* ~/de_novo_transcriptome/
+ln -s /homes/bioinfo/pipeline_datasets/AssembleT/* ~/de_novo_transcriptome/
  
 # Write assembly scripts
 

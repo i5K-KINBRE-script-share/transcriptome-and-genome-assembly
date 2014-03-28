@@ -23,7 +23,7 @@ Make a working directory.
 
 Create symbolic links to raw RNA reads from the human breast cancer cell lines. Creating a symbolic link rather than copying avoids wasting disk space and protects your raw data from being altered. We are using Illumina paired end reads from four breast cancer cell lines. This data was used in a biological visualization competition that illumina held a few years ago http://blog.expressionplot.com/2011/03/15/idea-challenge-2011-illuminas-data-excellence-award/.
 
-        ln -s /homes/bioinfo/RNA-Seq_sample/* ~/de_novo_transcriptome/
+        ln -s /homes/bioinfo/pipeline_datasets/AssembleT/* ~/de_novo_transcriptome/
         
 Step 3: Write assembly scripts
 

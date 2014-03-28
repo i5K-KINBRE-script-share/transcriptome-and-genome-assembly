@@ -10,6 +10,8 @@ use strict;
 use warnings;
 use File::Basename; # enable manipulating of the full path
 use Cwd;
+use lib '/homes/bioinfo/bioinfo_software/perl_modules/File-Slurp-9999.19/lib';
+use File::Slurp;
 # use List::Util qw(max);
 # use List::Util qw(sum);
 # use Bio::SeqIO;
@@ -64,6 +66,7 @@ GetOptions (
 or pod2usage(2);
 pod2usage(1) if $help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $man;
+sub quote { qq!"$_[0]"! } ## interpolate slurped text
 my $dirname = dirname(__FILE__); # github directories (all github directories must be in the same directory) no trailing slash
 my $home = getcwd; # working directory (this is where output files will be printed)
 #HOME = /homes/bioinfo/test_git
@@ -122,9 +125,9 @@ for my $samples (@reads)
         my (${filename}, ${directories}, ${suffix}) = fileparse($r1[$file],'\..*'); # break appart filenames
         my (${filename2}, ${directories2}, ${suffix2}) = fileparse($r2[$file],'\..*'); # break appart filenames
         open (SCRIPT, '>', "${home}/${project_name}_scripts/${filename}_clean.sh") or die "Can't open ${home}/${project_name}_scripts/${filename}_clean.sh!\n"; # create a shell script for each read-pair set
-        print SCRIPT "#!/bin/bash\n";
         if ($convert_header)
         {
+            print SCRIPT "#!/bin/bash\n";
             print SCRIPT "#######################################################################\n############ Convert headers of illumina paired-end data ##############\n#######################################################################\n";
             print SCRIPT "cat $r1[$file] | awk \'{if (NR % 4 == 1) {split(\$1, arr, \":\"); printf \"%s_%s:%s:%s:%s:%s#0/%s\\n\", arr[1], arr[3], arr[4], arr[5], arr[6], arr[7], substr(\$2, 1, 1), \$0} else if (NR % 4 == 3){print \"+\"} else {print \$0} }\' > ${home}/${filename}_header.fastq\n"; # Convert headers for R1
             $r1[$file] = "${home}/${filename}_header.fastq"; # redefine R1
@@ -134,12 +137,10 @@ for my $samples (@reads)
         #######################################################################
         ######### Clean reads for low quality without de-duplicating ##########
         #######################################################################
-        print SCRIPT "#######################################################################\n######### Clean reads for low quality without de-duplicating ##########\n#######################################################################\n";
         print QSUBS_CLEAN "qsub -l h_rt=24:00:00,mem=10G ${home}/${project_name}_scripts/${filename}_clean.sh\n";
-        print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq $r1[$file] -fastq2 $r2[$file] -min_len ${min_read_length} -min_qual_mean 25 -trim_qual_type mean -trim_qual_rule lt -trim_qual_window 2 -trim_qual_step 1 -derep 1 -trim_qual_left 20 -trim_qual_right 20 -ns_max_p 1 -trim_ns_left 5 -trim_ns_right 5 -lc_method entropy -lc_threshold 70 -out_format 3 -no_qual_header -log ${home}/${project_name}_prinseq/${filename}_paired.log -graph_data ${home}/${project_name}_prinseq/${filename}_raw.gd -out_good ${home}/${filename}_good -out_bad ${home}/${filename}_bad\n"; # run prinseq to filter low quality reads
-        print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq ${home}/${filename}_good_1.fastq -fastq2 ${home}/${filename}_good_2.fastq -out_good null -graph_data ${home}/${project_name}_prinseq/${filename}_cleaned.gd -out_bad null\n"; # cleaned metrics on paired reads
-        print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq ${home}/${filename}_good_1_singletons.fastq -out_good null -graph_data ${home}/${project_name}_prinseq/${filename}_cleaned_1_singletons.gd -out_bad null\n"; # cleaned metrics on singletons (reads where only one mate passed the qc)
-        print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq ${home}/${filename}_good_2_singletons.fastq -out_good null -graph_data ${home}/${project_name}_prinseq/${filename}_cleaned_2_singletons.gd -out_bad null\n"; # cleaned metrics on singletons (reads where only one mate passed the qc)
+        my $text_out = read_file("${dirname}/Prinseq_template.txt"); ## read shell template with slurp
+        print SCRIPT eval quote($text_out);
+        print SCRIPT "\n";
         #######################################################################
         #########      List reads files to concatinante later        ##########
         #######################################################################
@@ -197,13 +198,9 @@ for ( my $k = $shortest_k; $k <= $longest_k; $k += $increment_k )
     #######################################################################
     close (SCRIPT);
     open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh!\n"; # create a shell script for each read-pair set
-    print SCRIPT "#!/bin/bash\n";
-    print SCRIPT "#######################################################################\n#########         Assemble single k-mer assemblies  k=$k     ##########\n#######################################################################\n";
-    print SCRIPT "set -o verbose\n";
-    print SCRIPT "export PATH=\$(find /homes/bjsco/abyss-1.3.4 -type d | tr '\n' ':' | sed 's/:\$//'):\${PATH}\n"; # get all paths in the Abyss directory
-    print SCRIPT "cd ${home}\n";
-    print SCRIPT "mkdir ${project_name}_${k}\n";
-    print SCRIPT "/homes/bjsco/local/bin/abyss-pe name=${project_name}-${k} k=${k} np=\$NSLOTS ${lib_code}${libx_code}${se_lib_code} -C ${home}/${project_name}_${k}\n";
+    $text_out = read_file("${dirname}/Abyss_singlek_template.txt"); ## read shell template with slurp
+    print SCRIPT eval quote($text_out);
+    print SCRIPT "\n";
     print QSUBS_SINGLEK "qsub -l h_rt=48:00:00,mem=${mem_per_core}G -pe single ${new_nodes} ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh\n";
 }
 #######################################################################
@@ -214,13 +211,9 @@ open (QSUBS_MERGE, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_mer
 print QSUBS_MERGE "#!/bin/bash\n";
 close (SCRIPT);
 open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh!\n"; # create a shell script for each read-pair set
-print SCRIPT "#!/bin/bash\n";
-print SCRIPT "mkdir ${home}/${project_name}_merge_${merge_k}\n";
-print SCRIPT "#######################################################################\n#########         Assemble merged k-mer assemblies  k=${merge_k}     ##########\n#######################################################################\n";
-print SCRIPT "set -o verbose\n";
-print SCRIPT "export PATH=\$(find /homes/bjsco/abyss-1.3.4 -type d | tr '\n' ':' | sed 's/:\$//'):\${PATH}\n"; # get all paths in the Abyss directory
-print SCRIPT "cd ${home}\n";
-print SCRIPT "/homes/bjsco/local/bin/abyss-pe name=${project_name}-merge-${merge_k} k=${merge_k} np=\$NSLOTS ${lib_code}${libx_code}${se_lib_code} -C ${home}/${project_name}_merge_${merge_k}\n";
+$text_out = read_file("${dirname}/Abyss_mergek_template.txt"); ## read shell template with slurp
+print SCRIPT eval quote($text_out);
+print SCRIPT "\n";
 print QSUBS_MERGE "qsub -l h_rt=48:00:00,mem=${mem_per_core}G -pe single ${new_nodes} ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh\n";
 close (SCRIPT);
 #######################################################################
@@ -345,7 +338,7 @@ cd de_novo_genome
 
 # Create symbolic links to subsampled raw RNA reads from the human breast cancer cell lines.
  
-ln -s /homes/bioinfo/RNA-Seq_sample/* ~/de_novo_genome/
+ln -s /homes/bioinfo/pipeline_datasets/AssembleG/* ~/de_novo_genome/
  
 # Write assembly scripts
 
