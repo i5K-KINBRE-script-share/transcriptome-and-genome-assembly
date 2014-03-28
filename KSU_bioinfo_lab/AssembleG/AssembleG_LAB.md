@@ -25,7 +25,7 @@ Create symbolic links to raw DNA reads from the Staphylococcus aureus raw data. 
 
         ln -s /homes/bioinfo/Staphylococcus_aureus/* ~/de_novo_genome/
         
-Step 3: Write assembly scripts
+###Step 3: Write assembly scripts
 
 Check to see if your fastq headers end in "/1" or "/2" (if they do not you must add the parameter "-c" when you run "AssembleG.pl"
 
