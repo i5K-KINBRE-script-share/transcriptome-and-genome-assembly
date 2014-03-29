@@ -3,7 +3,7 @@
 
 All of the scripts you will need to complete this lab as well as the sample dataset will be copied to your Beocat directory as you follow the instructions below. You should type or paste the text in the beige code block into your terminal as you follow along with the instructions below. If you are not used to commandline, practice with real data is one of the best ways to learn.
 
-If you would like a quick primer on basic linux commands try these 10 minute lessons from Software Carpentry http://software-carpentry.org/v4/shell/index.html. For Beocat basics see http://support.cis.ksu.edu/BeocatDocs/GettingStarted.
+If you would like a quick primer on basic linux commands try these 10 minute lessons from Software Carpentry http://software-carpentry.org/v4/shell/index.html. Learn to start using Beocat and begin using the terminal got to https://github.com/i5K-KINBRE-script-share/FAQ/blob/master/UsingBeocat.md. Learn how to download files from Beocat at https://github.com/i5K-KINBRE-script-share/FAQ/blob/master/BeocatEditingTransferingFiles.md.
 
 We will be using the script "AssembleT.pl" to organize our working directory and write scripts to clean our reads, assemble our de novo transcriptome for human breast cancer cell lines, and summarize our assembly metrics.
 
