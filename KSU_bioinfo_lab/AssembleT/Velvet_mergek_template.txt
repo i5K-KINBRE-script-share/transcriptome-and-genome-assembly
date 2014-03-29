@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -o verbose
+#######################################################################
+#########          Add Velvet and Oases to the path          ##########
+#######################################################################
+PATH=/homes/sheltonj/abjc/velvet_1.2.08:/homes/sheltonj/abjc/oases_0.2.08:\${PATH}
+export PATH
+cd ${home}
+#######################################################################
+#########   Assemble merged k-mer assemblies  k=${merge_k}   ##########
+#######################################################################
+
+velveth mergedAssembly ${merge_k} -long ${project_name}_*/transcripts.fa
+
+velvetg mergedAssembly -read_trkg yes -conserveLong yes
+
+oases mergedAssembly -merge yes

@@ -10,6 +10,8 @@ use strict;
 use warnings;
 use File::Basename; # enable manipulating of the full path
 use Cwd;
+use lib '/homes/bioinfo/bioinfo_software/perl_modules/File-Slurp-9999.19/lib';
+use File::Slurp;
 # use List::Util qw(max);
 # use List::Util qw(sum);
 # use Bio::SeqIO;
@@ -58,6 +60,7 @@ or pod2usage(2);
 pod2usage(1) if $help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $man;
 my $dirname = dirname(__FILE__); # github directories (all github directories must be in the same directory) no trailing slash
+sub quote { qq!"$_[0]"! } ## interpolate slurped text
 my $home = getcwd; # working directory (this is where output files will be printed)
 #HOME = /homes/bioinfo/test_git
 mkdir "${home}/${project_name}_scripts";
@@ -100,8 +103,7 @@ for my $samples (@reads)
         my (${filename}, ${directories}, ${suffix}) = fileparse($r1[$file],'\..*'); # break appart filenames
         my (${filename2}, ${directories2}, ${suffix2}) = fileparse($r2[$file],'\..*'); # break appart filenames
         open (SCRIPT, '>', "${home}/${project_name}_scripts/${filename}_clean.sh") or die "Can't open ${home}/${project_name}_scripts/${filename}_clean.sh!\n"; # create a shell script for each read-pair set
-        print SCRIPT '#!/bin/bash';
-        print SCRIPT "\n";
+        print SCRIPT "#!/bin/bash\n";
         if ($convert_header)
         {
             print SCRIPT "#######################################################################\n############ Convert headers of illumina paired-end data ##############\n#######################################################################\n";
@@ -120,13 +122,10 @@ for my $samples (@reads)
         #######################################################################
         ######### Clean reads for low quality without de-duplicating ##########
         #######################################################################
-        print SCRIPT "#######################################################################\n######### Clean reads for low quality without de-duplicating ##########\n#######################################################################\n";
         print QSUBS_CLEAN "qsub -l h_rt=24:00:00,mem=10G ${home}/${project_name}_scripts/${filename}_clean.sh\n";
-        print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq $r1[$file] -fastq2 $r2[$file] -min_len ${min_read_length} -min_qual_mean 25 -trim_qual_type mean -trim_qual_rule lt -trim_qual_window 2 -trim_qual_step 1 -derep 1 -trim_qual_left 20 -trim_qual_right 20 -ns_max_p 1 -trim_ns_left 5 -trim_ns_right 5 -lc_method entropy -lc_threshold 70 -out_format 3 -no_qual_header -log ${home}/${project_name}_prinseq/${filename}_paired.log -graph_data ${home}/${project_name}_prinseq/${filename}_raw.gd -out_good ${home}/${filename}_good -out_bad ${home}/${filename}_bad\n"; # run prinseq to filter low quality reads
-        print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq ${home}/${filename}_good_1.fastq -fastq2 ${home}/${filename}_good_2.fastq -out_good null -graph_data ${home}/${project_name}_prinseq/${filename}_cleaned.gd -out_bad null\n"; # cleaned metrics on paired reads
-        print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq ${home}/${filename}_good_1_singletons.fastq -out_good null -graph_data ${home}/${project_name}_prinseq/${filename}_cleaned_1_singletons.gd -out_bad null\n"; # cleaned metrics on singletons (reads where only one mate passed the qc)
-        print SCRIPT "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -verbose -fastq ${home}/${filename}_good_2_singletons.fastq -out_good null -graph_data ${home}/${project_name}_prinseq/${filename}_cleaned_2_singletons.gd -out_bad null\n"; # cleaned metrics on singletons (reads where only one mate passed the qc)
-
+        $text_out = read_file("${dirname}/Prinseq_template.txt"); ## read shell template with slurp
+        print SCRIPT eval quote($text_out);
+        print SCRIPT "\n";
         if ($clean_read_file1)
         {
             $clean_read_file1 = "$clean_read_file1"." ${home}/${filename}_good_1.fastq";
@@ -157,22 +156,13 @@ for my $samples (@reads)
     #######################################################################
     open (QSUBS_SINGLEK, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_singlek.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_map.sh!\n";
     print QSUBS_SINGLEK "#!/bin/bash\n";
-
-
     for ( my $k = $shortest_k; $k <= $longest_k; $k += $increment_k )
     {
-
         close (SCRIPT);
         open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh!\n"; # create a shell script for each read-pair set
-        print SCRIPT "#!/bin/bash\n";
-        print SCRIPT "#######################################################################\n#########         Assemble single k-mer assemblies  k=$k     ##########\n#######################################################################\n";
-        print SCRIPT "set -o verbose\n";
-        print SCRIPT "PATH=/homes/sheltonj/abjc/velvet_1.2.08:/homes/sheltonj/abjc/oases_0.2.08:\${PATH}\n";
-        print SCRIPT "export PATH\n";
-        print SCRIPT "cd ${home}\n";
-        print SCRIPT "velveth ${project_name}_${k} ${k} -fastq -short ${home}/${project_name}_good_singletons.fastq -shortPaired -interleaved -fastq ${home}/${project_name}_good_shuff_pairs.fastq\n";
-        print SCRIPT "velvetg ${project_name}_${k} -read_trkg yes\n";
-        print SCRIPT "oases ${project_name}_${k}\n";
+        $text_out = read_file("${dirname}/Velvet_singlek_template.txt"); ## read shell template with slurp
+        print SCRIPT eval quote($text_out);
+        print SCRIPT "\n";
         ######### estimates memory requirements and write qsubs for beocat ###
         my $mem=30;
         my $kmem=(-109635 + 18977*100 + 86326*400 + 233353*$count*2 - 51092*${k});
@@ -188,15 +178,9 @@ for my $samples (@reads)
     print QSUBS_MERGE "#!/bin/bash\n";
     close (SCRIPT);
     open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh!\n"; # create a shell script for each read-pair set
-    print SCRIPT "#!/bin/bash\n";
-    print SCRIPT "#######################################################################\n#########         Assemble merged k-mer assemblies  k=${merge_k}     ##########\n#######################################################################\n";
-    print SCRIPT "set -o verbose\n";
-    print SCRIPT "PATH=/homes/sheltonj/abjc/velvet_1.2.08:/homes/sheltonj/abjc/oases_0.2.08:\${PATH}\n";
-    print SCRIPT "export PATH\n";
-    print SCRIPT "cd ${home}\n";
-    print SCRIPT "velveth mergedAssembly ${merge_k} -long ${project_name}_*/transcripts.fa\n";
-    print SCRIPT "velvetg mergedAssembly -read_trkg yes -conserveLong yes\n";
-    print SCRIPT "oases mergedAssembly -merge yes\n";
+    $text_out = read_file("${dirname}/Velvet_mergek_template.txt"); ## read shell template with slurp
+    print SCRIPT eval quote($text_out);
+    print SCRIPT "\n";
     close (SCRIPT);
     my $mem=30;
     my $kmem=(-109635 + 18977*100 + 86326*400 + 233353*$count*2 - 51092*${merge_k});
@@ -205,19 +189,14 @@ for my $samples (@reads)
     #######################################################################
     #########           Cluster merged assembly with CDH         ##########
     #######################################################################
-    open (CLUSTER_QC, '>', "${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh!\n";
-    print CLUSTER_QC "#!/bin/bash\n";
-    print CLUSTER_QC "set -o verbose\n";
-    print CLUSTER_QC "cd ${home}\n";
-#    print CLUSTER_QC '#######  non-redudant from http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0056217#s4 The transcripts from three individual assemblies were clustered (CD-HIT v4.5.4 http://www.bioinformatics.org/cd-hit/) [56] in order to generate a comprehensive reference. Sequence identity threshold and alignment coverage (for the shorter sequence) were both set as 80% to generate clusters. Such clustered transcripts were defined as reference transcripts in this work.###########';
-    print CLUSTER_QC "\n/homes/sheltonj/abjc/cd-hit-v4.6.1/cd-hit-est -i ${home}/mergedAssembly/transcripts.fa -o ${home}/mergedAssembly/CDH_clustermergedAssembly_${project_name}_${merge_k}.fa -c .80 -aS .80s\n";
-
+    
     #######################################################################
     #########    QC assemblies and summarize cleaning steps      ##########
     #######################################################################
-    print CLUSTER_QC "#######################################################################\n#########    QC assemblies and summarize cleaning steps      ##########\n#######################################################################\n";
-    print CLUSTER_QC "perl ~/read-cleaning-format-conversion/KSU_bioinfo_lab/pre_post_cleaning_metrics.pl ${home}/${project_name}_prinseq/*_paired.log\n";
-    print CLUSTER_QC "perl ~/genome-annotation-and-comparison/KSU_bioinfo_lab/assembly_quality_stats_for_multiple_assemblies.pl ${project_name}_*/transcripts.fa mergedAssembly/transcripts.fa mergedAssembly/CDH_clustermergedAssembly_${project_name}_${merge_k}.fa\n";
+    open (CLUSTER_QC, '>', "${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh!\n";
+    $text_out = read_file("${dirname}/CD-HIT_cluster_template.txt"); ## read shell template with slurp
+    print SCRIPT eval quote($text_out);
+    print SCRIPT "\n";
     open (QSUBS_CLUSTER_QC, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_cluster_and_qc.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_cluster_and_qc.sh!\n";
     print QSUBS_CLUSTER_QC "#!/bin/bash\n";
     print QSUBS_CLUSTER_QC "qsub -l h_rt=300:00:00,mem=2G ${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh\n";

@@ -1,0 +1,16 @@
+#!/bin/bash
+set -o verbose
+#######################################################################
+#########    Add Oases and Velvet directories to the path    ##########
+#######################################################################
+PATH=/homes/sheltonj/abjc/velvet_1.2.08:/homes/sheltonj/abjc/oases_0.2.08:\${PATH}
+export PATH
+cd ${home}
+#######################################################################
+#########         Assemble single k-mer assemblies  k=$k     ##########
+#######################################################################
+velveth ${project_name}_${k} ${k} -fastq -short ${home}/${project_name}_good_singletons.fastq -shortPaired -interleaved -fastq ${home}/${project_name}_good_shuff_pairs.fastq
+
+velvetg ${project_name}_${k} -read_trkg yes
+
+oases ${project_name}_${k}

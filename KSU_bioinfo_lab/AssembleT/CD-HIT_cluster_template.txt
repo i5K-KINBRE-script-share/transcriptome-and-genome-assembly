@@ -1,0 +1,18 @@
+#!/bin/bash
+set -o verbose
+cd ${home}
+#######  method for creating a non-redudant transcriptome from http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0056217#s4 "The transcripts from three individual assemblies were clustered (CD-HIT v4.5.4 http://www.bioinformatics.org/cd-hit/) [56] in order to generate a comprehensive reference. Sequence identity threshold and alignment coverage (for the shorter sequence) were both set as 80% to generate clusters. Such clustered transcripts were defined as reference transcripts in this work."  ###########
+
+
+#######################################################################
+#########           Cluster merged assembly with CDH         ##########
+#######################################################################
+/homes/sheltonj/abjc/cd-hit-v4.6.1/cd-hit-est -i ${home}/mergedAssembly/transcripts.fa -o ${home}/mergedAssembly/CDH_clustermergedAssembly_${project_name}_${merge_k}.fa -c .80 -aS .80s
+
+#######################################################################
+#########    QC assemblies and summarize cleaning steps      ##########
+#######################################################################
+
+perl ~/read-cleaning-format-conversion/KSU_bioinfo_lab/pre_post_cleaning_metrics.pl ${home}/${project_name}_prinseq/*_paired.log
+
+perl ~/genome-annotation-and-comparison/KSU_bioinfo_lab/assembly_quality_stats_for_multiple_assemblies.pl ${project_name}_*/transcripts.fa mergedAssembly/transcripts.fa mergedAssembly/CDH_clustermergedAssembly_${project_name}_${merge_k}.fa
