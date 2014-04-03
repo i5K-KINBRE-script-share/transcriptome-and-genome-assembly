@@ -1,4 +1,4 @@
-#!/bin/perl
+#!/usr/bin/perl
 ###############################################################################
 #   
 #	USAGE: perl AssembleG.pl [options]
@@ -23,7 +23,7 @@ use Pod::Usage;
 ##############         Print informative message             ##################
 ###############################################################################
 print "########################################################################\n";
-print "#  AssembleG.pl                                                        #\n";
+print "#  AssembleG.pl Version 1.0                                            #\n";
 print "#                                                                      #\n";
 print "#  Created by Jennifer Shelton 03/21/14                                #\n";
 print "# github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly #\n";
@@ -319,7 +319,7 @@ If the illumina headers do not end in /1 or /2 use this parameter to indicat tha
 
 B<OUTPUT DETAILS:>
 
-see: https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/AssembleG/AssembleG_LAB.md
+ See: https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/blob/master/KSU_bioinfo_lab/AssembleG/AssembleG_LAB.md
 
 B<Test with sample datasets:>
  
@@ -342,7 +342,7 @@ ln -s /homes/bioinfo/pipeline_datasets/AssembleG/* ~/de_novo_genome/
  
 # Write assembly scripts
 
-perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/AssembleG/AssembleG.pl -r ~/de_novo_genome/S_aureus_reads.txt -p S_aureus -n 35 --nodes 8 --mem_per_core 3 -s 21 -l 45 -i 2 -m 31
+ perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/AssembleG/AssembleG.pl -r ~/de_novo_genome/S_aureus_reads.txt -p S_aureus -n 35 --nodes 8 --mem_per_core 3 -s 21 -l 45 -i 2 -m 31
  
 # Clean raw reads. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
  

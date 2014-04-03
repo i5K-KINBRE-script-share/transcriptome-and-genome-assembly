@@ -1,4 +1,4 @@
-#!/bin/perl
+#!/usr/bin/perl
 ###############################################################################
 #   
 #	USAGE: perl AssembleT.pl [options]
@@ -23,7 +23,7 @@ use Pod::Usage;
 ##############         Print informative message             ##################
 ###############################################################################
 print "########################################################################\n";
-print "#  AssembleT.pl                                  #\n";
+print "#  AssembleT.pl Version 1.0                                            #\n";
 print "#                                                                      #\n";
 print "#  Created by Jennifer Shelton 03/19/14                                #\n";
 print "# github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly #\n";
