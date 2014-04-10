@@ -8,7 +8,7 @@ We will be using the script "AssembleG.pl" to organize our working directory and
 
 To begin this lab your should read about the software we will be using. Prinseq will be used to clean raw reads. Priseq cleaning is highly customizable. You can see a detailed parameter list by typing "perl /homes/sheltonj/abjc/prinseq-lite-0.20.3/prinseq-lite.pl -h" or by visiting their manual at http://prinseq.sourceforge.net/manual.html. You can read a detailed list of parameter options for Abyss genome assembler by typing "/homes/bjsco/local/bin/abyss-pe -h" or visit the Abyss manual at https://github.com/bcgsc/abyss#abyss. 
 
-To find out more about the parameters for "AssembleG.pl" run "perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/AssembleG/AssembleG.pl -man" or visit its manual at https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/tree/master/KSU_bioinfo_lab/AssembleG/AssembleG_README.md.
+To find out more about the parameters for "AssembleG.pl" run "perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/AssembleG/AssembleG.pl -man" or visit its manual at https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/tree/master/KSU_bioinfo_lab/AssembleG/AssembleG_MANUAL.md.
 
 ###Step 1: Clone the Git repositories 
 
