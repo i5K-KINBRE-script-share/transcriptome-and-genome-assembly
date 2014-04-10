@@ -328,7 +328,6 @@ B<Test with sample datasets:>
 # Clone the Git repositories
  
 git clone https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly
-git clone https://github.com/i5K-KINBRE-script-share/read-cleaning-format-conversion
 git clone https://github.com/i5K-KINBRE-script-share/genome-annotation-and-comparison
 
 # Make a working directory.
