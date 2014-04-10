@@ -33,7 +33,7 @@ print "########################################################################\
 ###############################################################################
 ##############                get arguments                  ##################
 ###############################################################################
-my ($r_list,$clean_read_file1,$clean_read_file2,$clean_read_singletons);
+my ($r_list,$clean_read_file1,$clean_read_file2,$clean_read_singletons,$text_out);
 my $project_name = "my_project";
 my $convert_header = 0;
 my $shortest_k = 25; # must by odd
