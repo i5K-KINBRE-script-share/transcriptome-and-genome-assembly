@@ -247,6 +247,8 @@ perl AssembleG.pl [options]
  Documentation options:
    -help    brief help message
    -man	    full documentation
+ Required options:
+   -r	     filename for file with tab separated list of fastq forward and reverse read files (one line per library insert size)
  Recommended options:
    -p	     project name (no spaces)(default = my_project)
    -s	     shortest kmer (default = 21)
@@ -274,7 +276,7 @@ Prints the more detailed manual page with output details and examples and exits.
  
 The filename of the user provided list of read files. The file should be tab separated. The first column should be the library type (either "pe" for paired end or "mp" for mate paired). Paired end or "pe" libraries are used to assemble sequence. Your library should be labeled "mp" if it is a long distance mate-pair library. "mp" libraries are not used for assembly, only for scaffolding. See https://github.com/bcgsc/abyss#assembling-multiple-libraries.
 
-Note: If you have multple insert lengths read files from each should be listed on separate lines so that Abyss can estimate insert length separately.
+Note: If you have multiple insert lengths read files from each should be listed on separate lines so that ABySS can estimate insert length separately.
  
 The second column is the first read file, then the third column is the second read file. Example:
  

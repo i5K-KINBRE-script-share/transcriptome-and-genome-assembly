@@ -13,6 +13,8 @@ USAGE
         Documentation options:
           -help    brief help message
           -man     full documentation
+         Required options:
+          -r	     filename for file with tab separated list of fastq forward and reverse read files (one line per library insert size)
         Recommended options:
           -p        project name (no spaces)(default = my_project)
           -s        shortest kmer (default = 21)
