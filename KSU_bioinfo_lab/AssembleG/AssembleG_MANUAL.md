@@ -7,6 +7,13 @@ SYNOPSIS
        finally assembly metrics are generated for all assemblies and read
        length and number are summarized before and after cleaning.
 
+UPDATES
+
+####AssembleG.pl Version 1.1 04/22/14
+
+AssembleG.pl Version 1.1 fixed bug in writing line to export abyss
+paths recursively
+
 USAGE
        perl AssembleG.pl [options]
 
