@@ -23,7 +23,7 @@ use Pod::Usage;
 ##############         Print informative message             ##################
 ###############################################################################
 print "########################################################################\n";
-print "#  AssembleG.pl Version 1.0                                            #\n";
+print "#  AssembleG.pl Version 1.1                                            #\n";
 print "#                                                                      #\n";
 print "#  Created by Jennifer Shelton 03/21/14                                #\n";
 print "# github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly #\n";
