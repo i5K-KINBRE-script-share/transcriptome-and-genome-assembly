@@ -201,7 +201,7 @@ for ( my $k = $shortest_k; $k <= $longest_k; $k += $increment_k )
     print SCRIPT "#!/bin/bash\n";
     print SCRIPT "#######################################################################\n";
     print SCRIPT "#########         Assemble single k-mer assemblies  k=$k     ##########\n";
-    print SCRIPT "#######################################################################\n"
+    print SCRIPT "#######################################################################\n";
     print SCRIPT "set -o verbose\n";
     print SCRIPT 'export PATH=$(find /homes/bjsco/abyss-1.3.4 -type d | tr \'\n\' \':\' | sed\'s/:\$//\'):${PATH}';
     print SCRIPT "\n";
