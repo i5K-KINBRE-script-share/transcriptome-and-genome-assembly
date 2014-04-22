@@ -1,11 +1,4 @@
-#!/bin/bash
-mkdir ${home}/${project_name}_merge_${merge_k}\n";
-#######################################################################
-#########    Assemble merged k-mer assemblies  k\=${merge_k}     #######
-#######################################################################
 
-set -o verbose
-export PATH\=\$(find /homes/bjsco/abyss-1.3.4 -type d | tr '\n' ':' | sed 's/:\$//'):\${PATH}
 cd ${home}
 
 /homes/bjsco/local/bin/abyss-pe name\=${project_name}-merge-${merge_k} k\=${merge_k} np\=\$NSLOTS ${lib_code}${libx_code}${se_lib_code} -C ${home}/${project_name}_merge_${merge_k}
