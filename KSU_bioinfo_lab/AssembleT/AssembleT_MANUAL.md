@@ -11,6 +11,13 @@ AssembleT.pl - The script writes scripts and qsubs to assemble illumina
        take the longest of similar putative transcripts, 7) finally assembly
        metrics are generated for all assemblies and read length and number are
        summarized before and after cleaning.
+       
+
+UPDATES
+
+####AssembleT.pl Version 1.1 04/23/14
+
+AssembleT.pl Version 1.1 fixed bug in writing special characters in a web address
 
 USAGE
 
