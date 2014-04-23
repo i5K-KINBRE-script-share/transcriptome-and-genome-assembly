@@ -194,6 +194,11 @@ for my $samples (@reads)
     #########    QC assemblies and summarize cleaning steps      ##########
     #######################################################################
     open (CLUSTER_QC, '>', "${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh!\n";
+    print CLUSTER_QC "#!/bin/bash\n";
+    print CLUSTER_QC "set -o verbose\n";
+    print CLUSTER_QC "cd ${home}\n";
+    print CLUSTER_QC '#######  method for creating a non-redudant transcriptome from http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0056217#s4 "The transcripts from three individual assemblies were clustered (CD-HIT v4.5.4 http://www.bioinformatics.org/cd-hit/) [56] in order to generate a comprehensive reference. Sequence identity threshold and alignment coverage (for the shorter sequence) were both set as 80% to generate clusters. Such clustered transcripts were defined as reference transcripts in this work."  ###########';
+    print CLUSTER_QC "\n";
     $text_out = read_file("${dirname}/CD-HIT_cluster_template.txt"); ## read shell template with slurp
     print SCRIPT eval quote($text_out);
     print SCRIPT "\n";

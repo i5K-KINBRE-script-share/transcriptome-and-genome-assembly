@@ -1,8 +1,3 @@
-#!/bin/bash
-set -o verbose
-cd ${home}
-#######  method for creating a non-redudant transcriptome from http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0056217#s4 "The transcripts from three individual assemblies were clustered (CD-HIT v4.5.4 http://www.bioinformatics.org/cd-hit/) [56] in order to generate a comprehensive reference. Sequence identity threshold and alignment coverage (for the shorter sequence) were both set as 80% to generate clusters. Such clustered transcripts were defined as reference transcripts in this work."  ###########
-
 
 #######################################################################
 #########           Cluster merged assembly with CDH         ##########
