@@ -19,6 +19,10 @@ UPDATES
 
 AssembleT.pl Version 1.1 fixed bug in writing special characters in a web address
 
+####AssembleT.pl Version 1.2 04/25/14
+
+AssembleT.pl Version 1.2 now runs Velvet Version 1.2.10 and Oases Version 0.2.08. Both Velvet and Oases were compiled to accept kmer values as long as 255 to accomedate longer illumina reads.
+
 USAGE
 
        perl AssembleT.pl [options]
