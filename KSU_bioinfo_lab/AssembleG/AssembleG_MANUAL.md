@@ -14,6 +14,10 @@ UPDATES
 AssembleG.pl Version 1.1 fixed bug in writing line to export abyss
 paths recursively
 
+####AssembleG.pl Version 1.2 04/25/14
+
+AssembleG.pl Version 1.2 now uses abyss-1.3.7 and this version of ABySS was compiled to accept kmers as long as 255 to accommodate longer illumina reads
+
 USAGE
        perl AssembleG.pl [options]
 
