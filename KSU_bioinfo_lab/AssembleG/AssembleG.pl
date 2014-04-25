@@ -203,7 +203,7 @@ for ( my $k = $shortest_k; $k <= $longest_k; $k += $increment_k )
     print SCRIPT "#########         Assemble single k-mer assemblies  k=$k     ##########\n";
     print SCRIPT "#######################################################################\n";
     print SCRIPT "set -o verbose\n";
-    print SCRIPT 'export PATH=$(find /homes/bjsco/abyss-1.3.4 -type d | tr \'\n\' \':\' | sed\'s/:\$//\'):${PATH}';
+    print SCRIPT 'export PATH=$(find /homes/bjsco/abyss-1.3.7 -type d | tr \'\n\' \':\' | sed\'s/:\$//\'):${PATH}';
     print SCRIPT "\n";
     $text_out = read_file("${dirname}/Abyss_singlek_template.txt"); ## read shell template with slurp
     print SCRIPT eval quote($text_out);
@@ -223,7 +223,7 @@ print SCRIPT "##################################################################
 print SCRIPT "#########     Assemble merged k-mer assemblies  k=${merge_k}  #########\n";
 print SCRIPT "#######################################################################\n";
 print SCRIPT "set -o verbose\n";
-print SCRIPT 'export PATH=$(find /homes/bjsco/abyss-1.3.4 -type d | tr \'\n\' \':\' | sed\'s/:\$//\'):${PATH}';
+print SCRIPT 'export PATH=$(find /homes/bjsco/abyss-1.3.7 -type d | tr \'\n\' \':\' | sed\'s/:\$//\'):${PATH}';
 print SCRIPT "\n";
 $text_out = read_file("${dirname}/Abyss_mergek_template.txt"); ## read shell template with slurp
 print SCRIPT eval quote($text_out);
