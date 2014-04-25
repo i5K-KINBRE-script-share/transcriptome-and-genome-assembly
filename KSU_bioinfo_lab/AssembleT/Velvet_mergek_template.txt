@@ -4,7 +4,7 @@ set -o verbose
 #######################################################################
 #########          Add Velvet and Oases to the path          ##########
 #######################################################################
-PATH=/homes/sheltonj/abjc/velvet_1.2.08:/homes/sheltonj/abjc/oases_0.2.08:\${PATH}
+PATH=/homes/bioinfo/bioinfo_software/velvet:/homes/bioinfo/bioinfo_software/oases:\${PATH}
 export PATH
 cd ${home}
 #######################################################################
