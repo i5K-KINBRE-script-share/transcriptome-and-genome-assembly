@@ -18,6 +18,11 @@ paths recursively
 
 AssembleG.pl Version 1.2 now uses abyss-1.3.7 and this version of ABySS was compiled to accept kmers as long as 255 to accommodate longer illumina reads
 
+####AssembleG.pl Version 1.3 04/29/14
+
+AssembleG.pl Version 1.2 fixed bug in merge template (missing mkdir command)
+
+
 USAGE
        perl AssembleG.pl [options]
 
