@@ -1,4 +1,5 @@
-
 cd ${home}
+
+mkdir ${home}/${project_name}_merge_${merge_k}
 
 /homes/bjsco/local/bin/abyss-pe name\=${project_name}-merge-${merge_k} k\=${merge_k} np\=\$NSLOTS ${lib_code}${libx_code}${se_lib_code} -C ${home}/${project_name}_merge_${merge_k}
