@@ -20,7 +20,7 @@ AssembleG.pl Version 1.2 now uses abyss-1.3.7 and this version of ABySS was comp
 
 ####AssembleG.pl Version 1.3 04/29/14
 
-AssembleG.pl Version 1.2 fixed bug in merge template (missing mkdir command)
+AssembleG.pl Version 1.3 fixed bug in merge template (missing mkdir command)
 
 
 USAGE
