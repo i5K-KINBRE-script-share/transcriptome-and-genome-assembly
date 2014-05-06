@@ -31,7 +31,7 @@ USAGE
           -help    brief help message
           -man     full documentation
         Required options:
-          -r        filename for file with tab separated list of fastq forward and reverse read files 
+          -r        full path for file with tab separated list of fastq forward and reverse read files 
         Recommended options:
           -p        project name (no spaces)(default = my_project)
           -s        shortest kmer (default = 25)
@@ -51,7 +51,7 @@ OPTIONS
                examples and exits.
                
        -r, --r_list
-               The filename of the user provided list of read files. The file
+               The fullpath (path and filename) of the user provided list of read files. The file
                should be tab separated with the first read file, then the
                second read file. Example:
 

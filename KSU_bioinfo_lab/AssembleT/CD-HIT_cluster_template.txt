@@ -2,7 +2,7 @@
 #######################################################################
 #########           Cluster merged assembly with CDH         ##########
 #######################################################################
-/homes/sheltonj/abjc/cd-hit-v4.6.1/cd-hit-est -i ${home}/mergedAssembly/transcripts.fa -o ${home}/mergedAssembly/CDH_clustermergedAssembly_${project_name}_${merge_k}.fa -c .80 -aS .80s
+/homes/sheltonj/abjc/cd-hit-v4.6.1/cd-hit-est -i ${home}/mergedAssembly/transcripts.fa -o ${home}/mergedAssembly/CDH_clustermergedAssembly_${project_name}_${merge_k}.fa -c .80 -aS .80s -M 0
 
 #######################################################################
 #########    QC assemblies and summarize cleaning steps      ##########

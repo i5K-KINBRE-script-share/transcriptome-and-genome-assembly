@@ -226,7 +226,7 @@ perl AssembleT.pl [options]
    -help    brief help message
    -man	    full documentation
  Required options:
-   -r        filename for file with tab separated list of fastq forward and reverse read files
+   -r        full path for file with tab separated list of fastq forward and reverse read files
  Recommended options:
    -p	     project name (no spaces)(default = my_project)
    -s	     shortest kmer (default = 25)
@@ -252,7 +252,7 @@ Prints the more detailed manual page with output details and examples and exits.
 
 =item B<-r, --r_list>
  
-The filename of the user provided list of read files. The file should be tab separated with the first read file, then the second read file. Example:
+This is the the full path (path and filename) of the user provided list of read files. The file should be tab separated with the first read file, then the second read file. Example:
  
  sample_data/sample_1_R1.fastq   sample_data/sample_1_R2.fastq
  
@@ -282,7 +282,7 @@ The minimum read length. Reads shorter than this after cleaning will be discarde
 
 =item B<-c, --convert_header>
  
-If the illumina headers do not end in /1 or /2 use this parameter to indicat that headers need to be converted. Check your headers by typing "head [fasta filename]" and read more about illumina headers at http://en.wikipedia.org/wiki/Fastq#Illumina_sequence_identifiers.
+If the illumina headers do not end in /1 or /2 use this parameter to indicat that headers need to be converted. Check your headers by typing "head [fasta full path]" and read more about illumina headers at http://en.wikipedia.org/wiki/Fastq#Illumina_sequence_identifiers.
  
  
 =back
