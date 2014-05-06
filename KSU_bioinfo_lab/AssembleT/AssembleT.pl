@@ -184,7 +184,7 @@ for my $samples (@reads)
     close (SCRIPT);
     my $mem=30;
     my $kmem=(-109635 + 18977*100 + 86326*400 + 233353*$count*2 - 51092*${merge_k});
-    $mem=(${kmem}/1000000);
+    $mem=(3*(${kmem}/1000000));
     print QSUBS_MERGE "qsub -l h_rt=100:00:00,mem=${mem}G ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh\n";
     #######################################################################
     #########           Cluster merged assembly with CDH         ##########
