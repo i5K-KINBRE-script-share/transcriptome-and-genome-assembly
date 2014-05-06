@@ -111,11 +111,13 @@ for my $samples (@reads)
             print "Error filename $r1[$file] includes spaces. Remove spaces from your filenames, update your readlist $r_list accordingly and re-run command\n";
             exit;
         }
-        unless (-e $r1[$file])
-        {
-            print "Error $r1[$file] does not exist or could not be opened. You must use absolute paths in the read list file \"-r\" or cd to the directory with you reads before you call this script!\n";
-            exit;
-        }
+        open (TEST_READ,'<',"$r1[$file]") or die "can't open $r1[$file]. You must use absolute paths in the read list file \"-r\" or cd to the directory with you reads before you call this script!\n";
+        close (TEST_READ);
+#        unless (-e $r1[$file])
+#        {
+#            print "Error $r1[$file] does not exist or could not be opened. You must use absolute paths in the read list file \"-r\" or cd to the directory with you reads before you call this script!\n";
+#            exit;
+#        }
         #######################################################################
         ######                 Check reverse file paths               #########
         #######################################################################
@@ -128,11 +130,13 @@ for my $samples (@reads)
             print "Error filename $r2[$file] includes spaces. Remove spaces from your filenames, update your readlist $r_list accordingly and re-run command\n";
             exit;
         }
-        unless (-e $r2[$file])
-        {
-            print "Error $r2[$file] does not exist or could not be opened. You must use absolute paths in the read list file \"-r\" or cd to the directory with you reads before you call this script!\n";
-            exit;
-        }
+        open (TEST_READ,'<',"$r2[$file]") or die "can't open $r2[$file]. You must use absolute paths in the read list file \"-r\" or cd to the directory with you reads before you call this script!\n";
+        close (TEST_READ);
+#        unless (-e $r2[$file])
+#        {
+#            print "Error $r2[$file] does not exist or could not be opened. You must use absolute paths in the read list file \"-r\" or cd to the directory with you reads before you call this script!\n";
+#            exit;
+#        }
         #######################################################################
         ###### Split read filenames into usefull parts for renaming   #########
         # and avoiding relative paths (some software disliked relative paths) #
