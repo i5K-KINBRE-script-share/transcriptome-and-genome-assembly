@@ -102,7 +102,7 @@ for my $samples (@reads)
         #######################################################################
         ######                 Check forward file paths               #########
         #######################################################################
-        if (($r1[$file] =~ /^\s/) || ($r1[$file] =~ /\s$/)
+        if (($r1[$file] =~ /^\s/) || ($r1[$file] =~ /\s$/))
         {
             $r1[$file] =~ s/ //g; ## removed white space because bioperl doesn't allow it in filenames
         }
@@ -119,7 +119,7 @@ for my $samples (@reads)
         #######################################################################
         ######                 Check reverse file paths               #########
         #######################################################################
-        if (($r2[$file] =~ /^\s/) || ($r2[$file] =~ /\s$/)
+        if (($r2[$file] =~ /^\s/) || ($r2[$file] =~ /\s$/))
         {
             $r2[$file] =~ s/ //g; ## removed white space because bioperl doesn't allow it in filenames
         }
