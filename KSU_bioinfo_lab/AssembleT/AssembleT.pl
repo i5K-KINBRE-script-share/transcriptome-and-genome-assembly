@@ -166,7 +166,7 @@ for my $samples (@reads)
         ######### estimates memory requirements and write qsubs for beocat ###
         my $mem=30;
         my $kmem=(-109635 + 18977*100 + 86326*400 + 233353*$count*2 - 51092*${k});
-        $mem=(${kmem}/1000000);
+        $mem=(3*(${kmem}/1000000));
         print QSUBS_SINGLEK "qsub -l h_rt=100:00:00,mem=${mem}G ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh\n";
 #        Ram required for velvetg = -109635 + 18977*ReadSize + 86326*GenomeSize + 233353*NumReads - 51092*K
 
