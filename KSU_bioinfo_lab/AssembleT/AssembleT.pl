@@ -74,7 +74,10 @@ open (READ_LIST, '<', $r_list) or die "Can't open $r_list!\n";
 while (<READ_LIST>)
 {
     chomp;
-    push @reads , [split];
+    if (/\S/)
+    {
+        push @reads , [split]; #Unless the line is blank
+    }
 }
 ###############################################################################
 ##############     Write scripts for each sample             ##################
@@ -96,6 +99,40 @@ for my $samples (@reads)
     print QSUBS_CLEAN "\n";
     for my $file (0..$#r1)
     {
+        #######################################################################
+        ######                 Check forward file paths               #########
+        #######################################################################
+        if (($r1[$file] =~ /^\s/) || ($r1[$file] =~ /\s$/)
+        {
+            $r1[$file] =~ s/ //g; ## removed white space because bioperl doesn't allow it in filenames
+        }
+        elsif ($r1[$file] =~ /\s/)
+        {
+            print "Error filename $r1[$file] includes spaces. Remove spaces from your filenames, update your readlist $r_list accordingly and re-run command\n";
+            exit;
+        }
+        unless (-e $r1[$file])
+        {
+            print "Error $r1[$file] does not exist or could not be opened. You must use absolute paths in the read list file \"-r\" or cd to the directory with you reads before you call this script!\n";
+            exit;
+        }
+        #######################################################################
+        ######                 Check reverse file paths               #########
+        #######################################################################
+        if (($r2[$file] =~ /^\s/) || ($r2[$file] =~ /\s$/)
+        {
+            $r2[$file] =~ s/ //g; ## removed white space because bioperl doesn't allow it in filenames
+        }
+        elsif ($r2[$file] =~ /\s/)
+        {
+            print "Error filename $r2[$file] includes spaces. Remove spaces from your filenames, update your readlist $r_list accordingly and re-run command\n";
+            exit;
+        }
+        unless (-e $r2[$file])
+        {
+            print "Error $r2[$file] does not exist or could not be opened. You must use absolute paths in the read list file \"-r\" or cd to the directory with you reads before you call this script!\n";
+            exit;
+        }
         #######################################################################
         ###### Split read filenames into usefull parts for renaming   #########
         # and avoiding relative paths (some software disliked relative paths) #
