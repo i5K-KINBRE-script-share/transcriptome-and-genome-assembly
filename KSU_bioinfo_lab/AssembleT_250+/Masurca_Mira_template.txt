@@ -1,0 +1,35 @@
+
+## After concatenating reads...
+
+cd ${home}
+
+###############################################################################
+#########             Write Masurca assembly scripts                 ##########
+###############################################################################
+
+/homes/bioinfo/bioinfo_software/MaSuRCA/bin/masurca ${home}/${project_name}_scripts/${project_name}_make_superead_config.txt -o ${home}/${project_name}_masurca_assemble.sh
+
+###############################################################################
+#########               Run Masurca assembly scripts                 ##########
+###############################################################################
+
+bash ${home}/${project_name}_masurca_assemble.sh
+
+###############################################################################
+#########               Convert .frg to .fasta files                 ##########
+###############################################################################
+
+perl ${dirname}/Frg2Fasta.pl superReadSequences_shr.frg
+
+###############################################################################
+#########                    Run Mira OLC assembly                   ##########
+###############################################################################
+
+ln -s superReadSequences_shr.fa ${project_name}_sanger_in.sanger.fasta
+
+/homes/bioinfo/bioinfo_software/mira/bin/mira --project=${project_name} --job=denovo,est,accurate,sanger COMMON_SETTINGS -SK:mmhr=10 -GE:not=4 --noqualities SANGER_SETTINGS -AS:bdq=30
+
+
+
+
+

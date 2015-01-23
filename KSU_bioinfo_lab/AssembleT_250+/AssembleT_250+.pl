@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 ###############################################################################
 #   
-#	USAGE: perl AssembleT.pl [options]
+#	USAGE: perl AssembleT_250+.pl [options]
 #
 #  Created by jennifer shelton
 #
@@ -12,23 +12,25 @@ use File::Basename; # enable manipulating of the full path
 use Cwd;
 use lib '/homes/bioinfo/bioinfo_software/perl_modules/File-Slurp-9999.19/lib';
 use File::Slurp;
-# use List::Util qw(max);
-# use List::Util qw(sum);
+use List::Util qw(max);
+use List::Util qw(sum);
 # use Bio::SeqIO;
 # use Bio::Seq;
 # use Bio::DB::Fasta;
+use Term::ANSIColor;
 use Getopt::Long;
 use Pod::Usage;
 ###############################################################################
 ##############         Print informative message             ##################
 ###############################################################################
 print "########################################################################\n";
-print "#  AssembleT.pl Version 1.2                                            #\n";
+print "#  AssembleT_250+.pl Version 1.0                                       #\n";
+print colored ("#                 !!!!!WARNING UNDER DEVELOPMENT!!!!                   #", 'bold white on_blue'), "\n";
 print "#                                                                      #\n";
-print "#  Created by Jennifer Shelton 03/19/14                                #\n";
+print "#  Created by Jennifer Shelton 01/20/15                                #\n";
 print "# github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly #\n";
-print "#  perl AssembleT.pl -help # for usage/options                         #\n";
-print "#  perl AssembleT.pl -man # for more details                           #\n";
+print "#  perl AssembleT_250+.pl -help # for usage/options                    #\n";
+print "#  perl AssembleT_250+.pl -man # for more details                      #\n";
 print "########################################################################\n";
 ###############################################################################
 ##############                get arguments                  ##################
@@ -36,12 +38,9 @@ print "########################################################################\
 my ($r_list,$clean_read_file1,$clean_read_file2,$clean_read_singletons,$text_out);
 my $project_name = "my_project";
 my $convert_header = 0;
-my $shortest_k = 25; # must by odd
-my $longest_k = 65; # must by odd
-my $increment_k = 2; # must by even
-my $merge_k = 39; # must by odd
 my $min_read_length = 90;
 my $count = 0; # count reads in files
+my $max_threads=16; #default max threads
 my $man = 0;
 my $help = 0;
 GetOptions (
@@ -50,11 +49,8 @@ GetOptions (
               'r|r_list:s' => \$r_list,
               'p|project_name:s' => \$project_name,
               'c|convert_header' => \$convert_header,
-              's|shortest_k:i' => \$shortest_k,
-              'l|longest_k:i' => \$longest_k,
-              'i|increment_k:i' => \$increment_k,
-              'm|merge_k:i' => \$merge_k,
-              'n|min_read_length:i' => \$min_read_length
+              'n|min_read_length:i' => \$min_read_length,
+              'j|max_threads:i' => \$max_threads
               )
 or pod2usage(2);
 pod2usage(1) if $help;
@@ -66,6 +62,19 @@ my $home = getcwd; # working directory (this is where output files will be print
 mkdir "${home}/${project_name}_scripts";
 mkdir "${home}/${project_name}_qsubs";
 mkdir "${home}/${project_name}_prinseq";
+###############################################################################
+##############                Subroutines                    ##################
+###############################################################################
+sub mean { return @_ ? sum(@_) / @_ : 0 } # calculate mean of array
+
+sub std_dev #calculate standard deviation of the reverse read lengths
+{
+    my ($sub_mean, @sub_lengths) = @_;
+    my $sub_std_dev_sum = 0;
+    $sub_std_dev_sum += ($_ - $sub_mean) ** 2 for @sub_lengths;
+    return @sub_lengths ? sqrt($sub_std_dev_sum / @sub_lengths) : 0;
+}
+
 ###############################################################################
 ############## Create array of the sample names and read files    #############
 ###############################################################################
@@ -79,13 +88,28 @@ while (<READ_LIST>)
         push @reads , [split (/\t/)]; #Unless the line is blank
     }
 }
+#######################################################################
+#########          Prep Masurca assembly scripts             ##########
+#######################################################################
+open (SCRIPT_MAS, '>', "${home}/${project_name}_scripts/${project_name}_Masurca_Mira.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_Masurca_Mira.sh!\n"; # create a shell script for super read assembly with masurca
+print SCRIPT_MAS "#!/bin/bash\n";
+open (SCRIPT_MAS_CONFIG, '>', "${home}/${project_name}_scripts/${project_name}_make_superead_config.txt") or die "Can't open ${home}/${project_name}_scripts/${project_name}_make_superead_config.txt!\n"; # create a shell script for super read assembly with masurca
+print SCRIPT_MAS_CONFIG "DATA\n";
 ###############################################################################
 ##############     Write scripts for each sample             ##################
 ###############################################################################
+my $singleton_count = 1;
 for my $samples (@reads)
 {
-    my @r1 = split(',',$samples->[0]); # get list of forward reads
-    my @r2 = split(',',$samples->[1]); # get list of reverse reads
+    my  @seq_lengths; ## INITIALIZE ARRAY FOR LENGTH AND STD CALCULATION FOR READS
+    my $sample_code = $samples->[0]; # get two character sample code
+    if ($sample_code =~ /^S/)
+    {
+        print "Warning, your library prefix may not start with a \"S\".\n";
+        exit;
+    }
+    my @r1 = split(',',$samples->[1]); # get list of forward reads
+    my @r2 = split(',',$samples->[2]); # get list of reverse reads
     if (scalar(@r1) != scalar(@r2))
     {
         print "Error the number of forward and reverse read files does not match!\n"; # each forward file must have a corresponding reverse file
@@ -138,14 +162,30 @@ for my $samples (@reads)
             $r1[$file] = "${home}/${filename}_header.fastq"; # redefine R1
             print SCRIPT "cat $r2[$file] | awk \'{if (NR % 4 == 1) {split(\$1, arr, \":\"); printf \"%s_%s:%s:%s:%s:%s#0/%s\\n\", arr[1], arr[3], arr[4], arr[5], arr[6], arr[7], substr(\$2, 1, 1), \$0} else if (NR % 4 == 3){print \"+\"} else {print \$0} }\' > ${home}/${filename2}_header.fastq\n"; # Convert headers for R2
             $r2[$file] = "${home}/${filename2}_header.fastq"; #redefine R2
-            
         }
         #######################################################################
-        ###### Estimate size of R1 library to estimate the mem needed #########
+        ######     Get read size of R2 library to pass to Masurca     #########
         #######################################################################
-        open (TEST_READ,'<',"${home}/${filename}${suffix2}") or die "can't open ${home}/${filename}${suffix2}. You must use absolute paths in the read list file \"-r\" or cd to the directory with you reads before you call this script!\n";
-        1 while( <TEST_READ> );
-        my $count = ($. + $count);
+        open (my $test_read,'<',"${home}/${filename}${suffix2}") or die "can't open ${home}/${filename}${suffix2}. You must use absolute paths in the read list file \"-r\" or cd to the directory with you reads before you call this script!\n";
+        ## ADD LENGTH AND STD CALCULATION FOR READS
+        my $first_line = 1;
+        while( <$test_read> )
+        {
+            if ($first_line)
+            {
+                $first_line = 0; #skip first line
+                next;
+            }
+            chomp;
+            my @seq = split ('');
+            push (@seq_lengths,scalar(@seq)); # grab length of sequence line and store in a list
+            foreach (1..3) # skip the rest of the lines
+            {
+                my $next_lines .= <$test_read>;
+            }
+        }
+#        1 while( <TEST_READ> );
+#        my $count = ($. + $count); ##Get number of lines in a file
         #######################################################################
         ######### Clean reads for low quality without de-duplicating ##########
         #######################################################################
@@ -170,71 +210,46 @@ for my $samples (@reads)
     #######################################################################
     #########            Concantinate clean reads                ##########
     #######################################################################
-    open (SCRIPT, '>', "${home}/${project_name}_scripts/cat_reads.sh") or die "Can't open ${home}/${project_name}_scripts/cat_reads.sh!\n"; # create a shell script
-    print SCRIPT "#!/bin/bash\n";
-    print SCRIPT "cat$clean_read_file1 > ${home}/${project_name}_good_1.fastq # concatenate fasta\n";
-    print SCRIPT "cat$clean_read_file2 > ${home}/${project_name}_good_2.fastq # concatenate fasta\n";
-    print SCRIPT "cat$clean_read_singletons > ${home}/${project_name}_good_singletons.fastq # concatenate single fasta\n";
-    ######### shuffle sequences (if your pairs are unbroken but in two fastq files) ##########
-    print SCRIPT "perl /homes/sheltonj/abjc/velvet_1.2.08/contrib/shuffleSequences_fasta/shuffleSequences_fastq.pl ${home}/${project_name}_good_1.fastq ${home}/${project_name}_good_2.fastq ${home}/${project_name}_good_shuff_pairs.fastq\n";
-    
+#    my  @seq_lengths; ## INITIALIZE ARRAY FOR LENGTH AND STD CALCULATION FOR READS
+#    my $sample_code = $samples->[0]; # get two character sample code
+    print SCRIPT_MAS "cat$clean_read_file1 > ${home}/${project_name}_${sample_code}_good_1.fastq # concatenate fastq\n";
+    print SCRIPT_MAS "cat$clean_read_file2 > ${home}/${project_name}_${sample_code}_good_2.fastq # concatenate fastq\n";
+    print SCRIPT_MAS "cat$clean_read_singletons > ${home}/${project_name}_${sample_code}_good_singletons.fastq # concatenate single fastq\n";
     #######################################################################
-    #########         Assemble single k-mer assemblies           ##########
+    #########            Write Masurca Config file               ##########
     #######################################################################
-    open (QSUBS_SINGLEK, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_singlek.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_map.sh!\n";
-    print QSUBS_SINGLEK "#!/bin/bash\n";
-    for ( my $k = $shortest_k; $k <= $longest_k; $k += $increment_k )
+    my $read_mean = &mean(@seq_lengths); #find mean read length for a file
+    my $read_standard_deviation = &std_dev($read_mean,@seq_lengths); #find standard deviation of read length for a file
+    print SCRIPT_MAS_CONFIG "PE= $sample_code $read_mean $read_standard_deviation ${home}/${project_name}_${sample_code}_good_1.fastq ${home}/${project_name}_${sample_code}_good_2.fastq\n"; # add to Masurca Config file
+    print SCRIPT_MAS_CONFIG "PE= S${singleton_count} $read_mean $read_standard_deviation ${home}/${project_name}_${sample_code}_good_singletons.fastq\n"; # add to Masurca Config file
+    ++$singleton_count;
+    if ($singleton_count >= 10) ## Warn about auto generated library prefix
     {
-        close (SCRIPT);
-        open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh!\n"; # create a shell script for each read-pair set
-        $text_out = read_file("${dirname}/Velvet_singlek_template.txt"); ## read shell template with slurp
-        print SCRIPT eval quote($text_out);
-        print SCRIPT "\n";
-        ######### estimates memory requirements and write qsubs for beocat ###
-        my $mem=30;
-        my $kmem=(-109635 + 18977*100 + 86326*400 + 233353*$count*2 - 51092*${k});
-        $mem=(3*(${kmem}/1000000));
-        print QSUBS_SINGLEK "qsub -l h_rt=100:00:00,mem=${mem}G ${home}/${project_name}_scripts/${project_name}_${k}_assemble.sh\n";
-#        Ram required for velvetg = -109635 + 18977*ReadSize + 86326*GenomeSize + 233353*NumReads - 51092*K
-
+        print "Warning, your scripts have more than 9 singleton libraries. You will need to make the library prefix unique and only two letters manually in the script ${home}/${project_name}_scripts/${project_name}_make_superead.sh before running. The two letter prefix for a library must be unique for Masurca (see manual ftp://ftp.genome.umd.edu/pub/MaSuRCA/MaSuRCA_QuickStartGuide.pdf)."
     }
-    #######################################################################
-    #########   Assemble merged k-mer assemblies  k=${merge_k}   ##########
-    #######################################################################
-    open (QSUBS_MERGE, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_merge.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_merge.sh!\n";
-    print QSUBS_MERGE "#!/bin/bash\n";
-    close (SCRIPT);
-    open (SCRIPT, '>', "${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh!\n"; # create a shell script for each read-pair set
-    $text_out = read_file("${dirname}/Velvet_mergek_template.txt"); ## read shell template with slurp
-    print SCRIPT eval quote($text_out);
-    print SCRIPT "\n";
-    close (SCRIPT);
-    my $mem=30;
-    my $kmem=(-109635 + 18977*100 + 86326*400 + 233353*$count*2 - 51092*${merge_k});
-    $mem=(3*(${kmem}/1000000));
-    print QSUBS_MERGE "qsub -l h_rt=100:00:00,mem=${mem}G ${home}/${project_name}_scripts/${project_name}_merge_${merge_k}_assemble.sh\n";
-    #######################################################################
-    #########           Cluster merged assembly with CDH         ##########
-    #######################################################################
-    
-    #######################################################################
-    #########    QC assemblies and summarize cleaning steps      ##########
-    #######################################################################
-    open (CLUSTER_QC, '>', "${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh") or die "Can't open ${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh!\n";
-    print CLUSTER_QC "#!/bin/bash\n";
-    print CLUSTER_QC "set -o verbose\n";
-    print CLUSTER_QC "cd ${home}\n";
-    print CLUSTER_QC '#######  method for creating a non-redudant transcriptome from http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0056217#s4 "The transcripts from three individual assemblies were clustered (CD-HIT v4.5.4 http://www.bioinformatics.org/cd-hit/) [56] in order to generate a comprehensive reference. Sequence identity threshold and alignment coverage (for the shorter sequence) were both set as 80% to generate clusters. Such clustered transcripts were defined as reference transcripts in this work."  ###########';
-    print CLUSTER_QC "\n";
-    $text_out = read_file("${dirname}/CD-HIT_cluster_template.txt"); ## read shell template with slurp
-    print CLUSTER_QC eval quote($text_out);
-    print CLUSTER_QC "\n";
-    open (QSUBS_CLUSTER_QC, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_cluster_and_qc.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_cluster_and_qc.sh!\n";
-    print QSUBS_CLUSTER_QC "#!/bin/bash\n";
-    print QSUBS_CLUSTER_QC "qsub -l h_rt=300:00:00,mem=2G ${home}/${project_name}_scripts/${project_name}_cluster_and_qc_assemblies.sh\n";
+    $clean_read_file1 = '';
+    $clean_read_file2 =  '';
+    $clean_read_singletons = '';
 }
+#######################################################################
+## Write parameter section of masurca_config_parameter_template.txt  ##
+#######################################################################
+$text_out = read_file("${dirname}/masurca_config_parameter_template.txt"); ## read shell template with slurp
+print SCRIPT_MAS_CONFIG eval quote($text_out);
+print SCRIPT_MAS_CONFIG "\n";
 
-print "done\n";
+#######################################################################
+########               Write Masurca and Mira script          #########
+#######################################################################
+$text_out = read_file("${dirname}/Masurca_Mira_template.txt"); ## read shell template with slurp
+print SCRIPT_MAS eval quote($text_out);
+print SCRIPT_MAS "\n";
+open (QSUBS_MAS_MIRA, '>', "${home}/${project_name}_qsubs/${project_name}_qsubs_Masurca_Mira.sh") or die "Can't open ${home}/${project_name}_qsubs/${project_name}_qsubs_Masurca_Mira.sh!\n";
+print QSUBS_MAS_MIRA "#!/bin/bash\n";
+print QSUBS_MAS_MIRA "qsub -l h_rt=100:00:00,mem=4G -pe single ${max_threads} ${home}/${project_name}_scripts/${project_name}_Masurca_Mira.sh\n";
+
+
+print "Done\n";
 ##################################################################################
 ##############                  Documentation                   ##################
 ##################################################################################
@@ -243,28 +258,25 @@ __END__
 
 =head1 SYNOPSIS
 
-AssembleT.pl - The script writes scripts and qsubs to assemble illumina paired end reads into a de novo transcriptome. The script 1) converts illumina headers if the "-c" parameter is used, 2) cleans and deduplicates raw reads using Prinseq http://prinseq.sourceforge.net/manual.html, 3) index the reference genome for mapping, 4) reads are the assembled multiple times with a range of values of k, 5) these assemblies are merged with Oases using a merge kmer value, 6) then the merged assembly is clusted with CDHit to take the longest of similar putative transcripts, 7) finally assembly metrics are generated for all assemblies and read length and number are summarized before and after cleaning.
+AssembleT_250+.pl - The script writes scripts and qsubs to assemble Illumina paired end reads that are 250 bp or longer into a de novo transcriptome. The script 1) converts illumina headers if the "-c" parameter is used, 2) cleans and deduplicates raw reads using Prinseq http://prinseq.sourceforge.net/manual.html, 3) reads are the assembled into supereads wuth Masurca, 5) these supereads are converted to FASTA file format and assembled with Mira.
 
 =head1 USAGE
 
-perl AssembleT.pl [options]
+perl AssembleT_250+.pl [options]
 
  Documentation options:
    -help    brief help message
    -man	    full documentation
  Required options:
-   -r        full path for file with tab separated list of fastq forward and reverse read files
+   -r        full path for file with tab separated list of two-letter Masurca library prefix codes, fastq forward and fastq reverse read files
  Recommended options:
    -p	     project name (no spaces)(default = my_project)
-   -s	     shortest kmer (default = 25)
-   -l	     longest kmer (default = 65)
-   -i	     kmer increments (default = 2)
-   -m	     merge kmer (default = 39)
  Filtering options:
    -n	     minimum read length (default = 90)
  Fastq format options:
    -c	     convert fastq headers
-   
+ Additional options:
+   -j	     max number of threads for superead assembly
 =head1 OPTIONS
 
 =over 8
@@ -279,29 +291,17 @@ Prints the more detailed manual page with output details and examples and exits.
 
 =item B<-r, --r_list>
  
-This is the the full path (path and filename) of the user provided list of read files. The file should be tab separated with the first read file, then the second read file. Example:
+This is the the full path (path and filename) of the user provided list of read files. The file should be tab separated with the two-letter Masurca library prefix codes, then the first read file, then the second read file. Example:
  
- sample_data/sample_1_R1.fastq   sample_data/sample_1_R2.fastq
+D1  sample_data/sample_1_R1.fastq   sample_data/sample_1_R2.fastq
  
 If a sample has multiple fastq files for R1 and R2 separate these with commas. Example:
  
- sample_data/sample_1a_R1.fastq,sample_data/sample_1b_R1.fastq,sample_data/sample_1c_R1.fastq   sample_data/sample_1a_R2.fastq,sample_data/sample_1b_R2.fastq,sample_data/sample_1c_R2.fastq
+D2  sample_data/sample_1a_R1.fastq,sample_data/sample_1b_R1.fastq,sample_data/sample_1c_R1.fastq   sample_data/sample_1a_R2.fastq,sample_data/sample_1b_R2.fastq,sample_data/sample_1c_R2.fastq
  
-=item B<-s, --shortest_k>
+=item B<-j, --max_threads>
  
-The minimum kmer length for single kmer assemblies. Default minimum kmer is 25bp. This value must by odd.
- 
-=item B<-l, --longtest_k>
- 
-The maximum kmer length for single kmer assemblies. Default maximum kmer is 65bp. This value must by odd.
- 
-=item B<-i, --increments_k>
- 
-The length by which the value of k increases for the next single kmer assembly. Default kmer is 2bp. This value must by even.
- 
-=item B<-m, --merge_k>
- 
-The kmer length used when merging single kmer assemblies. Default merge kmer is 39bp. This value must by odd.
+The max number of threads for superead assembly on Beocat (default=16).
  
 =item B<-n, --min_read_length>
  
@@ -327,8 +327,6 @@ B<Test with sample datasets:>
 # Clone the Git repositories
  
 git clone https://github.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly
-git clone https://github.com/i5K-KINBRE-script-share/read-cleaning-format-conversion
-git clone https://github.com/i5K-KINBRE-script-share/genome-annotation-and-comparison
 
 # Make a working directory.
  
@@ -341,26 +339,15 @@ ln -s /homes/bioinfo/pipeline_datasets/AssembleT/* ~/de_novo_transcriptome/
  
 # Write assembly scripts
 
-perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/AssembleT/AssembleT.pl -r cell_line_reads_assembly.txt -p cell_line -s 25 -l 39 -i 2 -n 35 -m 33
+perl ~/transcriptome-and-genome-assembly/KSU_bioinfo_lab/AssembleT/AssembleT_250+.pl -r cell_line_reads_assembly.txt -p cell_line
  
 # Clean raw reads. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
  
 bash ~/de_novo_transcriptome/cell_line_qsubs/cell_line_qsubs_clean.sh
  
-# Concatenate cleaned reads and shuffle sequences for Oases
+# Concatenate cleaned reads and Assemble transcriptomes. Test completion by typing "status" in a Beocat session.
  
-bash ~/de_novo_transcriptome/cell_line_scripts/cat_reads.sh
+ bash ~/de_novo_transcriptome/cell_line_qsubs/testing_qsubs_Masurca_Mira.sh
  
-# Assemble single kmer transcriptomes. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
- 
- bash ~/de_novo_transcriptome/cell_line_qsubs/cell_line_qsubs_singlek.sh
- 
-# Merge single kmer transcriptomes. When these jobs are complete go to next step. Test completion by typing "status" in a Beocat session.
- 
- bash ~/de_novo_transcriptome/cell_line_qsubs/cell_line_qsubs_merge.sh
- 
-# Cluster merged assembly with CDH. Putative transcripts that share 80% identity over 80% of the length are clustered and the longest transcript is printed in the clustered fasta file. This step will also generate assembly metrics and summarize the cleaning step results.
- 
- bash ~/de_novo_transcriptome/cell_line_qsubs/cell_line_qsubs_cluster_and_qc.sh
 
 =cut
