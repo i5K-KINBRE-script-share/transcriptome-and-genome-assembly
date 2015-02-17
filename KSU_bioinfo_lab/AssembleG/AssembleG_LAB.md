@@ -1,5 +1,5 @@
 ![alttext](https://raw.githubusercontent.com/i5K-KINBRE-script-share/transcriptome-and-genome-assembly/master/images/ngs_pipelines_on_beocat.png)
-##Genome assembly with AbYSS
+##Genome assembly with ABySS
 All of the scripts you will need to complete this lab as well as the sample dataset will be copied to your Beocat directory as you follow the instructions below. You should type or paste the text in the beige code block into your terminal as you follow along with the instructions below. If you are not used to commandline, practice with real data is one of the best ways to learn.
 
 If you would like a quick primer on basic linux commands try these 10 minute lessons from Software Carpentry http://software-carpentry.org/v4/shell/index.html. To learn to start using Beocat and begin using the terminal go to https://github.com/i5K-KINBRE-script-share/FAQ/blob/master/UsingBeocat.md. Learn how to download files from Beocat at https://github.com/i5K-KINBRE-script-share/FAQ/blob/master/BeocatEditingTransferingFiles.md.
