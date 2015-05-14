@@ -5,6 +5,11 @@ Scripts in this repository have been used to assemble de novo transcriptomes and
 
 KSU_bioinfo_lab folder
 ----------------------
+
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.17588.svg)](http://dx.doi.org/10.5281/zenodo.17588)
+
+Cite as: Jennifer Shelton. (2015). transcriptome-and-genome-assembly: transcriptome-and-genome-assembly Version 1.0.0. Zenodo. 10.5281/zenodo.17588
+
 ###AssembleG.pl
 
 **AssembleG.pl** - The script writes scripts and qsubs to assemble illumina paired end reads into a de novo genome. The script 1) converts illumina headers if the "-c" parameter is used, 2) cleans and deduplicates raw reads using Prinseq http://prinseq.sourceforge.net/manual.html, 3) reads are the assembled multiple times with a range of values of k, 4) finally assembly metrics are generated for all assemblies and read length and number are summarized before and after cleaning.
